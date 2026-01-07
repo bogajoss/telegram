@@ -18,8 +18,19 @@ const PostDetails = () => {
   const { user } = useUserContext();
 
   const { data: post, isLoading } = useGetPostById(id);
+
+  const creatorId = typeof post?.creator === "string"
+    ? post.creator
+    : post?.creator?.$id || (post?.creator as any)?.id;
+
+  const { data: fetchedCreator } = useGetUserById(
+    typeof post?.creator === "string" ? post.creator : ""
+  );
+
+  const creator = typeof post?.creator === "string" ? fetchedCreator : post?.creator;
+
   const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
-    post?.creator.$id
+    creatorId
   );
   const { mutate: deletePost } = useDeletePost();
 
@@ -62,11 +73,11 @@ const PostDetails = () => {
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
-                to={`/profile/${post?.creator.$id}`}
+                to={`/profile/${creatorId || ""}`}
                 className="flex items-center gap-3">
                 <img
                   src={
-                    post?.creator.imageUrl ||
+                    (creator as any)?.imageUrl ||
                     "/assets/icons/profile-placeholder.svg"
                   }
                   alt="creator"
@@ -74,7 +85,7 @@ const PostDetails = () => {
                 />
                 <div className="flex gap-1 flex-col">
                   <p className="base-medium lg:body-bold text-light-1">
-                    {post?.creator.name}
+                    {(creator as any)?.name || "Unknown"}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">
@@ -88,10 +99,13 @@ const PostDetails = () => {
                 </div>
               </Link>
 
-              <div className="flex-center gap-4">
+              <div
+                className={`flex-center gap-4 ${
+                  user.id !== creatorId && "hidden"
+                }`}>
                 <Link
                   to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}>
+                  className={`${user.id !== creatorId && "hidden"}`}>
                   <img
                     src={"/assets/icons/edit.svg"}
                     alt="edit"
@@ -104,7 +118,7 @@ const PostDetails = () => {
                   onClick={handleDeletePost}
                   variant="ghost"
                   className={`ost_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
+                    user.id !== creatorId && "hidden"
                   }`}>
                   <img
                     src={"/assets/icons/delete.svg"}

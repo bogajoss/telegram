@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
+import { useGetUserById } from "@/lib/react-query/queries";
 import { IPostDocument } from "@/types";
 
 type PostCardProps = {
@@ -12,16 +13,24 @@ type PostCardProps = {
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
 
-  if (!post.creator) return;
+  const creatorId = typeof post.creator === "string" 
+    ? post.creator 
+    : post.creator?.$id || (post.creator as any)?.id;
+
+  const { data: fetchedCreator } = useGetUserById(creatorId || "");
+
+  const creator = typeof post.creator === "string" ? fetchedCreator : post.creator;
+
+  if (!creator) return null;
 
   return (
     <div className="post-card">
       <div className="flex-between">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.creator.$id}`}>
+          <Link to={`/profile/${creatorId || ""}`}>
             <img
               src={
-                post.creator?.imageUrl ||
+                (creator as any)?.imageUrl ||
                 "/assets/icons/profile-placeholder.svg"
               }
               alt="creator"
@@ -31,7 +40,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
           <div className="flex flex-col">
             <p className="base-medium lg:body-bold text-light-1">
-              {post.creator.name}
+              {(creator as any)?.name || "Unknown"}
             </p>
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
@@ -47,7 +56,7 @@ const PostCard = ({ post }: PostCardProps) => {
 
         <Link
           to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"}`}>
+          className={`${user.id !== creatorId && "hidden"}`}>
           <img
             src={"/assets/icons/edit.svg"}
             alt="edit"

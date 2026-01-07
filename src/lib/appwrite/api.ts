@@ -182,13 +182,13 @@ export async function uploadFile(file: File) {
 }
 
 // ============================== GET FILE URL
-export function getFilePreview(fileId: string) {
+export function getFilePreview(fileId: string, width: number = 1200, height: number = 1200) {
   try {
     const fileUrl = storage.getFilePreview(
       appwriteConfig.storageId,
       fileId,
-      2000,
-      2000,
+      width,
+      height,
       ImageGravity.Top,
       100
     );

@@ -105,7 +105,7 @@ async function setup() {
         permissions: ['read("any")', 'create("users")', 'update("users")', 'delete("users")'],
         fileSecurity: false,
         maximumFileSize: 52428800, // 50MB
-        allowedFileExtensions: ['jpg', 'png', 'gif', 'jpeg', 'svg', 'mp4'],
+        allowedFileExtensions: ['jpg', 'png', 'gif', 'jpeg', 'svg', 'mp4', 'webp', 'heic', 'avif'],
       });
       console.log(`✅ Storage bucket "${STORAGE_ID}" created.`);
     } catch (e) {
