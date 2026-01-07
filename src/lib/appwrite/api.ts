@@ -54,7 +54,12 @@ export async function saveUserToDB(user: {
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       ID.unique(),
-      user
+      {
+        ...user,
+        is_verified: false,
+        followers: [],
+        followingUsers: [],
+      }
     );
 
     return newUser;
@@ -100,7 +105,11 @@ export async function getCurrentUser() {
 
     if (!currentUser) throw Error;
 
-    return currentUser.documents[0] as unknown as IUserDocument;
+    const userDoc = currentUser.documents[0];
+    return {
+      ...userDoc,
+      following: (userDoc as any).followingUsers || userDoc.following || [],
+    } as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
     return null;
@@ -525,7 +534,13 @@ export async function getUsers(limit?: number) {
 
     if (!users) throw Error;
 
-    return users as unknown as Models.DocumentList<IUserDocument>;
+    return {
+      ...users,
+      documents: users.documents.map((user) => ({
+        ...user,
+        following: (user as any).followingUsers || user.following || [],
+      })),
+    } as unknown as Models.DocumentList<IUserDocument>;
   } catch (error) {
     console.log(error);
   }
@@ -542,27 +557,64 @@ export async function getUserById(userId: string) {
 
     if (!user) throw Error;
 
-    return user as unknown as IUserDocument;
+    return {
+      ...user,
+      following: (user as any).followingUsers || user.following || [],
+    } as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }
 }
 
 // ============================== FOLLOW / UNFOLLOW USER
-export async function followUser(followerId: string, followingArray: string[]) {
+export async function followUser(userId: string, followerId: string, followingArray: string[]) {
   try {
-    const updatedUser = await databases.updateDocument(
+    // 1. Update the follower's "following" list
+    const updatedFollower = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       followerId,
       {
-        following: followingArray,
+        followingUsers: followingArray,
       }
     );
 
-    if (!updatedUser) throw Error;
+    if (!updatedFollower) throw Error;
 
-    return updatedUser as unknown as IUserDocument;
+    // 2. Update the target user's "followers" list
+    // First get the target user to get their current followers
+    const targetUser = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!targetUser) throw Error;
+
+    let followersArray = targetUser.followers?.map((u: any) => 
+      typeof u === "string" ? u : u.$id
+    ) || [];
+
+    const isNowFollowing = followingArray.includes(userId);
+
+    if (isNowFollowing) {
+      if (!followersArray.includes(followerId)) {
+        followersArray.push(followerId);
+      }
+    } else {
+      followersArray = followersArray.filter((id: string) => id !== followerId);
+    }
+
+    await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        followers: followersArray,
+      }
+    );
+
+    return updatedFollower as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }

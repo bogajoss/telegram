@@ -11,6 +11,7 @@ export const INITIAL_USER = {
   email: "",
   imageUrl: "",
   bio: "",
+  is_verified: false,
 };
 
 const INITIAL_STATE = {
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: currentAccount.email,
           imageUrl: currentAccount.imageUrl,
           bio: currentAccount.bio,
+          is_verified: currentAccount.is_verified,
         });
         setIsAuthenticated(true);
 
@@ -77,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     checkAuthUser();
-  }, []);
+  }, [navigate]);
 
   const value = {
     user,

@@ -22,16 +22,16 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-// Config variables
-const ENDPOINT = env.VITE_APPWRITE_URL || 'https://cloud.appwrite.io/v1';
+const ENDPOINT = env.VITE_APPWRITE_URL || 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT_ID = env.VITE_APPWRITE_PROJECT_ID;
 const API_KEY = env.APPWRITE_API_KEY;
 
-// Fixed IDs for the migration (You should update your .env.local with these after running)
+// Collection IDs
 const DATABASE_ID = env.VITE_APPWRITE_DATABASE_ID || 'social-media-db';
 const USER_COLLECTION_ID = env.VITE_APPWRITE_USER_COLLECTION_ID || 'users';
 const POST_COLLECTION_ID = env.VITE_APPWRITE_POST_COLLECTION_ID || 'posts';
 const SAVES_COLLECTION_ID = env.VITE_APPWRITE_SAVES_COLLECTION_ID || 'saves';
+const COMMENTS_COLLECTION_ID = env.VITE_APPWRITE_COMMENTS_COLLECTION_ID || 'comments';
 const STORAGE_ID = env.VITE_APPWRITE_STORAGE_ID || 'media';
 
 if (!API_KEY || !PROJECT_ID) {
@@ -40,7 +40,7 @@ if (!API_KEY || !PROJECT_ID) {
 }
 
 // ==========================================
-// 2. API CLIENT (using fetch)
+// 2. API CLIENT
 // ==========================================
 
 const headers = {
@@ -50,17 +50,13 @@ const headers = {
 };
 
 async function api(method, path, body = null) {
-  const options = {
-    method,
-    headers,
-  };
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
+  const options = { method, headers };
+  if (body) options.body = JSON.stringify(body);
 
   const response = await fetch(`${ENDPOINT}${path}`, options);
+  if (response.status === 204) return null;
+
   const contentType = response.headers.get('content-type');
-  
   let data = null;
   if (contentType && contentType.includes('application/json')) {
     data = await response.json();
@@ -76,21 +72,18 @@ async function api(method, path, body = null) {
 }
 
 // ==========================================
-// 3. MIGRATION LOGIC
+// 3. SETUP LOGIC
 // ==========================================
 
 async function setup() {
-  console.log('Starting migration for Social Media App...');
+  console.log('🚀 Starting Comprehensive Social Media App Setup...');
   console.log(`Endpoint: ${ENDPOINT}`);
   console.log(`Project ID: ${PROJECT_ID}`);
 
   try {
     // --- 1. Create Database ---
     try {
-      await api('POST', '/databases', {
-        databaseId: DATABASE_ID,
-        name: 'Social Media DB',
-      });
+      await api('POST', '/databases', { databaseId: DATABASE_ID, name: 'Social Media DB' });
       console.log(`✅ Database "${DATABASE_ID}" created.`);
     } catch (e) {
       if (e.status === 409) console.log(`ℹ️  Database "${DATABASE_ID}" already exists.`);
@@ -113,7 +106,7 @@ async function setup() {
       else throw e;
     }
 
-    // --- 3. Define Schemas ---
+    // --- 3. Define Collections ---
     const collections = [
       {
         id: USER_COLLECTION_ID,
@@ -126,6 +119,14 @@ async function setup() {
           { key: 'bio', type: 'string', size: 2200, required: false },
           { key: 'imageId', type: 'string', size: 255, required: false },
           { key: 'imageUrl', type: 'url', required: false },
+          { key: 'is_verified', type: 'boolean', required: false, default: false },
+          { key: 'followers', type: 'string', size: 255, required: false, array: true },
+          { key: 'followingUsers', type: 'string', size: 255, required: false, array: true },
+        ],
+        indexes: [
+          { key: 'idx_accountId', type: 'key', attributes: ['accountId'] },
+          { key: 'idx_username', type: 'unique', attributes: ['username'] },
+          { key: 'idx_email', type: 'unique', attributes: ['email'] },
         ]
       },
       {
@@ -137,23 +138,32 @@ async function setup() {
           { key: 'tags', type: 'string', size: 255, required: false, array: true },
           { key: 'imageUrl', type: 'url', required: false },
           { key: 'imageId', type: 'string', size: 255, required: false },
+        ],
+        indexes: [
+          { key: 'idx_createdAt', type: 'key', attributes: ['$createdAt'] }
         ]
       },
       {
         id: SAVES_COLLECTION_ID,
         name: 'Saves',
         attributes: [] // Only relationships
+      },
+      {
+        id: COMMENTS_COLLECTION_ID,
+        name: 'Comments',
+        attributes: [
+          { key: 'content', type: 'string', size: 2000, required: true },
+        ]
       }
     ];
 
-    // --- 4. Create Collections & Simple Attributes ---
+    // --- 4. Create Collections & Attributes ---
     for (const col of collections) {
-      // Create Collection
       try {
         await api('POST', `/databases/${DATABASE_ID}/collections`, {
           collectionId: col.id,
           name: col.name,
-          permissions: ['read("any")', 'create("users")', 'update("users")', 'delete("users")'],
+          permissions: ['read("any")', 'create("any")', 'update("any")', 'delete("any")'],
           documentSecurity: false
         });
         console.log(`✅ Collection "${col.name}" created.`);
@@ -162,95 +172,66 @@ async function setup() {
         else throw e;
       }
 
-      // Create Attributes
-      for (const attr of col.attributes) {
+      for (const attr of col.attributes || []) {
         try {
-          const payload = {
-            key: attr.key,
-            required: attr.required,
-            array: attr.array || false,
-          };
-          
-          let typeEndpoint = attr.type;
-          if (attr.type === 'string') {
-             payload.size = attr.size || 255;
-          }
-          
-          // API endpoint: /databases/{databaseId}/collections/{collectionId}/attributes/{type}
-          await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/${typeEndpoint}`, payload);
-          
+          const payload = { key: attr.key, required: attr.required, array: attr.array || false };
+          if (attr.type === 'string') payload.size = attr.size || 255;
+          if (attr.default !== undefined) payload.default = attr.default;
+
+          await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/${attr.type}`, payload);
           console.log(`   + Attribute "${attr.key}" created.`);
-          // Small delay to prevent rate limits/race conditions
-          await new Promise(r => setTimeout(r, 500)); 
+          await new Promise(r => setTimeout(r, 600)); 
         } catch (e) {
-          if (e.status === 409) {
-             // Attribute exists
-          } else {
-            console.error(`   ❌ Error creating attribute "${attr.key}": ${e.message}`);
-          }
+          if (e.status !== 409) console.error(`   ❌ Error attribute "${attr.key}": ${e.message}`);
+        }
+      }
+
+      for (const idx of col.indexes || []) {
+        try {
+          await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/indexes`, idx);
+          console.log(`   + Index "${idx.key}" created.`);
+        } catch (e) {
+          if (e.status !== 409) console.error(`   ❌ Error index "${idx.key}": ${e.message}`);
         }
       }
     }
 
     // --- 5. Create Relationships ---
-    console.log('--- Creating Relationships ---');
+    console.log('\n--- Creating Relationships ---');
 
-    // Helper for relationships
-    const createRelationship = async (collectionId, relatedCollectionId, type, key, twoWay = false, twoWayKey = '', onDelete = 'setNull') => {
+    const createRel = async (colId, relColId, type, key, twoWay = false, twoWayKey = '', onDelete = 'setNull') => {
       try {
-        const payload = {
-          relatedCollectionId,
-          type,
-          twoWay,
-          key,
-          onDelete
-        };
-        if (twoWay && twoWayKey) {
-            payload.twoWayKey = twoWayKey;
-        }
-
-        await api('POST', `/databases/${DATABASE_ID}/collections/${collectionId}/attributes/relationship`, payload);
-        console.log(`   + Relationship "${key}" created in "${collectionId}".`);
+        const payload = { relatedCollectionId: relColId, type, twoWay, key, onDelete };
+        if (twoWay && twoWayKey) payload.twoWayKey = twoWayKey;
+        await api('POST', `/databases/${DATABASE_ID}/collections/${colId}/attributes/relationship`, payload);
+        console.log(`   + Relationship "${key}" created.`);
         await new Promise(r => setTimeout(r, 1000));
       } catch (e) {
-        if (e.status === 409) {
-           console.log(`   ℹ️  Relationship "${key}" in "${collectionId}" already exists.`);
-        } else {
-           console.error(`   ❌ Error creating relationship "${key}" in "${collectionId}": ${e.message}`);
-        }
+        if (e.status !== 409) console.error(`   ❌ Error rel "${key}": ${e.message}`);
       }
     };
 
-    // 1. Posts -> Creator (Many to One)
-    // "creator" in Posts -> "posts" in Users
-    await createRelationship(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', true, 'posts', 'cascade');
+    // Relationships
+    await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', true, 'posts', 'cascade');
+    await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToMany', 'likes', true, 'liked', 'cascade');
+    await createRel(SAVES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'save', 'cascade');
+    await createRel(SAVES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', false, '', 'cascade');
+    await createRel(COMMENTS_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', false, '', 'cascade');
+    await createRel(COMMENTS_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'comments', 'cascade');
 
-    // 2. Posts <-> Likes (Many to Many)
-    // "likes" in Posts -> "liked" in Users
-    await createRelationship(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToMany', 'likes', true, 'liked', 'cascade');
-
-    // 3. Saves -> User (Many to One)
-    // "user" in Saves -> "save" in Users
-    await createRelationship(SAVES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'save', 'cascade');
-
-    // 4. Saves -> Post (Many to One)
-    // "post" in Saves -> (No inverse in Post types usually, but let's check)
-    // If I set twoWay: false, key 'post'.
-    await createRelationship(SAVES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', false, undefined, 'cascade');
-
-
-    console.log('\n✅ Migration completed successfully!');
+    console.log('\n✅ All-in-one setup completed successfully!');
     console.log('------------------------------------------------');
-    console.log('Please update your .env.local with these IDs if they are empty:');
+    console.log('Please verify your .env.local matches these IDs:');
     console.log(`VITE_APPWRITE_DATABASE_ID=${DATABASE_ID}`);
     console.log(`VITE_APPWRITE_USER_COLLECTION_ID=${USER_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_POST_COLLECTION_ID=${POST_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_SAVES_COLLECTION_ID=${SAVES_COLLECTION_ID}`);
+    console.log(`VITE_APPWRITE_COMMENTS_COLLECTION_ID=${COMMENTS_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_STORAGE_ID=${STORAGE_ID}`);
     console.log('------------------------------------------------');
 
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error('\n❌ Setup failed:', error.message);
   }
 }
 

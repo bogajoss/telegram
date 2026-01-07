@@ -11,7 +11,7 @@ import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useFollowUser, useGetCurrentUser } from "@/lib/react-query/queries";
-import { GridPostList, Loader } from "@/components/shared";
+import { GridPostList, Loader, VerifiedBadge } from "@/components/shared";
 
 interface StabBlockProps {
   value: string | number;
@@ -41,12 +41,16 @@ const Profile = () => {
       </div>
     );
 
-  const isFollowing = loggedInUser?.following?.some((u: any) => u.$id === currentUser.$id);
+  const isFollowing = loggedInUser?.following?.some((u: any) => 
+    typeof u === "string" ? u === currentUser.$id : u.$id === currentUser.$id
+  );
 
   const handleFollowUser = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    let followingArray = loggedInUser?.following?.map((u: any) => u.$id) || [];
+    let followingArray = loggedInUser?.following?.map((u: any) => 
+      typeof u === "string" ? u : u.$id
+    ) || [];
 
     if (isFollowing) {
       followingArray = followingArray.filter((followingId: string) => followingId !== currentUser.$id);
@@ -70,8 +74,9 @@ const Profile = () => {
           />
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
-              <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full">
+              <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full flex items-center justify-center xl:justify-start gap-1">
                 {currentUser.name}
+                {currentUser.is_verified && <VerifiedBadge className="w-6 h-6 lg:w-8 lg:h-8" />}
               </h1>
               <p className="small-regular md:body-medium text-light-3 text-center xl:text-left">
                 @{currentUser.username}

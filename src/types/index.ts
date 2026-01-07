@@ -40,6 +40,7 @@ export type IUser = {
   email: string;
   imageUrl: string;
   bio: string;
+  is_verified?: boolean;
 };
 
 export type INewUser = {
@@ -75,8 +76,9 @@ export type IUserDocument = Models.Document & {
   posts: IPostDocument[];
   liked: IPostDocument[];
   save: ISaveDocument[];
-  followers: IUserDocument[];
-  following: IUserDocument[];
+  followers: IUserDocument[] | string[];
+  following: IUserDocument[] | string[];
+  is_verified?: boolean;
 };
 
 export type INewComment = {

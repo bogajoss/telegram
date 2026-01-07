@@ -2,7 +2,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 import { INavLink } from "@/types";
 import { sidebarLinks } from "@/constants";
-import { Loader } from "@/components/shared";
+import { Loader, VerifiedBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
@@ -43,7 +43,10 @@ const LeftSidebar = () => {
               className="h-14 w-14 rounded-full"
             />
             <div className="flex flex-col">
-              <p className="body-bold">{user.name}</p>
+              <p className="body-bold flex items-center">
+                {user.name}
+                {user.is_verified && <VerifiedBadge />}
+              </p>
               <p className="small-regular text-light-3">@{user.username}</p>
             </div>
           </Link>

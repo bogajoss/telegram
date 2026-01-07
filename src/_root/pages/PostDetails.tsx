@@ -18,7 +18,6 @@ import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 
 const CommentItem = ({ comment, userId, onDelete }: { comment: any, userId: string, onDelete: (id: string) => void }) => {
-  const creatorId = typeof comment.creator === "string" ? comment.creator : comment.creator?.$id;
   const { data: fetchedCreator } = useGetUserById(typeof comment.creator === "string" ? comment.creator : "");
   
   const creator = typeof comment.creator === "string" ? fetchedCreator : comment.creator;

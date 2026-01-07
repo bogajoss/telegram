@@ -35,7 +35,7 @@ const Explore = () => {
     if (inView && !searchValue) {
       fetchNextPage();
     }
-  }, [inView, searchValue]);
+  }, [inView, searchValue, fetchNextPage]);
 
   if (!posts)
     return (

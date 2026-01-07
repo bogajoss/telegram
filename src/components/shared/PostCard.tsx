@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { PostStats } from "@/components/shared";
+import { PostStats, VerifiedBadge } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
@@ -39,8 +39,9 @@ const PostCard = ({ post }: PostCardProps) => {
           </Link>
 
           <div className="flex flex-col">
-            <p className="base-medium lg:body-bold text-light-1">
+            <p className="base-medium lg:body-bold text-light-1 flex items-center">
               {(creator as any)?.name || "Unknown"}
+              {(creator as any)?.is_verified && <VerifiedBadge />}
             </p>
             <div className="flex-center gap-2 text-light-3">
               <p className="subtle-semibold lg:small-regular ">
