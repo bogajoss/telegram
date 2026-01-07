@@ -1,7 +1,7 @@
 import { ID, Query, ImageGravity, Models } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument, INewComment, ICommentDocument } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument, ILikeDocument, INewComment, ICommentDocument } from "@/types";
 
 // ============================================================
 // AUTH
@@ -372,21 +372,39 @@ export async function deletePost(postId?: string, imageId?: string) {
   }
 }
 
-// ============================== LIKE / UNLIKE POST
-export async function likePost(postId: string, likesArray: string[]) {
+// ============================== LIKE POST
+export async function likePost(userId: string, postId: string) {
   try {
-    const updatedPost = await databases.updateDocument(
+    const newLike = await databases.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      postId,
+      appwriteConfig.likesCollectionId,
+      ID.unique(),
       {
-        likes: likesArray,
+        user: userId,
+        post: postId,
       }
     );
 
-    if (!updatedPost) throw Error;
+    if (!newLike) throw Error;
 
-    return updatedPost as unknown as IPostDocument;
+    return newLike as unknown as ILikeDocument;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== DELETE LIKED POST
+export async function deleteLikedPost(likeRecordId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.likesCollectionId,
+      likeRecordId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
   } catch (error) {
     console.log(error);
   }
@@ -424,6 +442,32 @@ export async function deleteSavedPost(savedRecordId: string) {
     if (!statusCode) throw Error;
 
     return { status: "Ok" };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET USER'S LIKED POSTS
+export async function getUserLikedPosts(userId: string) {
+  try {
+    const likedRecords = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.likesCollectionId,
+      [Query.equal("user", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!likedRecords) throw Error;
+
+    // Map the junction documents back to post documents
+    const posts = likedRecords.documents.map((record: any) => ({
+      ...record.post,
+      creator: record.post.creator,
+    }));
+
+    return {
+      ...likedRecords,
+      documents: posts,
+    } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }

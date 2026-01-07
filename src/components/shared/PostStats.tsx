@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-import { checkIsLiked } from "@/lib/utils";
 import {
   useLikePost,
+  useDeleteLikedPost,
   useSavePost,
   useDeleteSavedPost,
   useGetCurrentUser,
 } from "@/lib/react-query/queries";
-import { IPostDocument, IUserDocument, ISaveDocument } from "@/types";
+import { IPostDocument, ISaveDocument, ILikeDocument } from "@/types";
 
 type PostStatsProps = {
   post: IPostDocument;
@@ -17,31 +17,29 @@ type PostStatsProps = {
 
 const PostStats = ({ post, userId }: PostStatsProps) => {
   const location = useLocation();
-  const likesList = post?.likes?.map((user: IUserDocument | string) => 
-    typeof user === "string" ? user : user.$id || (user as any).id
-  ) || [];
-
-  const [likes, setLikes] = useState<string[]>(likesList);
+  const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  useEffect(() => {
-    setLikes(post?.likes?.map((user: IUserDocument | string) => 
-      typeof user === "string" ? user : user.$id || (user as any).id
-    ) || []);
-  }, [post]);
-
   const { mutate: likePost } = useLikePost();
+  const { mutate: deleteLikedPost } = useDeleteLikedPost();
   const { mutate: savePost } = useSavePost();
   const { mutate: deleteSavePost } = useDeleteSavedPost();
 
   const { data: currentUser } = useGetCurrentUser();
+
+  const likedPostRecord = post?.likes?.find(
+    (record: ILikeDocument) => (record.user.$id || (record.user as any)) === userId
+  );
+
+  useEffect(() => {
+    setIsLiked(!!likedPostRecord);
+  }, [likedPostRecord]);
 
   const savedPostRecord = currentUser?.save?.find(
     (record: ISaveDocument) => record.post.$id === post.$id
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSaved(!!savedPostRecord);
   }, [currentUser, savedPostRecord]);
 
@@ -50,16 +48,13 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
 
-    let likesArray = [...likes];
-
-    if (likesArray.includes(userId)) {
-      likesArray = likesArray.filter((Id) => Id !== userId);
-    } else {
-      likesArray.push(userId);
+    if (likedPostRecord) {
+      setIsLiked(false);
+      return deleteLikedPost(likedPostRecord.$id);
     }
 
-    setLikes(likesArray);
-    likePost({ postId: post.$id, likesArray });
+    likePost({ userId: userId, postId: post.$id });
+    setIsLiked(true);
   };
 
   const handleSavePost = (
@@ -86,7 +81,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       <div className="flex gap-2 mr-5">
         <img
           src={`${
-            checkIsLiked(likes, userId)
+            isLiked
               ? "/assets/icons/liked.svg"
               : "/assets/icons/like.svg"
           }`}
@@ -96,7 +91,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           onClick={(e) => handleLikePost(e)}
           className="cursor-pointer"
         />
-        <p className="small-medium lg:base-medium">{likes.length}</p>
+        <p className="small-medium lg:base-medium">{post?.likes?.length || 0}</p>
       </div>
 
       <div className="flex gap-2">

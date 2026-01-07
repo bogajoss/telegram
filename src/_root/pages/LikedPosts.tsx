@@ -1,10 +1,12 @@
+import { useParams } from "react-router-dom";
 import { GridPostList, Loader } from "@/components/shared";
-import { useGetCurrentUser } from "@/lib/react-query/queries";
+import { useGetUserLikedPosts } from "@/lib/react-query/queries";
 
 const LikedPosts = () => {
-  const { data: currentUser } = useGetCurrentUser();
+  const { id } = useParams();
+  const { data: likedPosts, isLoading } = useGetUserLikedPosts(id || "");
 
-  if (!currentUser)
+  if (isLoading)
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -13,10 +15,10 @@ const LikedPosts = () => {
 
   return (
     <div className="w-full">
-      {currentUser.liked?.length === 0 ? (
+      {!likedPosts || likedPosts.documents.length === 0 ? (
         <p className="text-light-4 text-center w-full">No liked posts</p>
       ) : (
-        <GridPostList posts={currentUser.liked} showStats={false} />
+        <GridPostList posts={likedPosts.documents as any} showStats={false} />
       )}
     </div>
   );

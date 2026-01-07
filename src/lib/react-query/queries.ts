@@ -16,8 +16,10 @@ import {
   getPostById,
   updatePost,
   getUserPosts,
+  getUserLikedPosts,
   deletePost,
   likePost,
+  deleteLikedPost,
   getUserById,
   updateUser,
   getRecentPosts,
@@ -120,6 +122,14 @@ export const useGetUserPosts = (userId?: string) => {
   });
 };
 
+export const useGetUserLikedPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_LIKED_POSTS, userId],
+    queryFn: () => getUserLikedPosts(userId || ""),
+    enabled: !!userId,
+  });
+};
+
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -148,16 +158,11 @@ export const useDeletePost = () => {
 export const useLikePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      postId,
-      likesArray,
-    }: {
-      postId: string;
-      likesArray: string[];
-    }) => likePost(postId, likesArray),
-    onSuccess: (data) => {
+    mutationFn: ({ userId, postId }: { userId: string; postId: string }) =>
+      likePost(userId, postId),
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID],
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
@@ -170,6 +175,39 @@ export const useLikePost = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_LIKED_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+
+export const useDeleteLikedPost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (likeRecordId: string) => deleteLikedPost(likeRecordId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_LIKED_POSTS],
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],

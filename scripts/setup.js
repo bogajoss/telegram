@@ -31,6 +31,7 @@ const DATABASE_ID = env.VITE_APPWRITE_DATABASE_ID || 'social-media-db';
 const USER_COLLECTION_ID = env.VITE_APPWRITE_USER_COLLECTION_ID || 'users';
 const POST_COLLECTION_ID = env.VITE_APPWRITE_POST_COLLECTION_ID || 'posts';
 const SAVES_COLLECTION_ID = env.VITE_APPWRITE_SAVES_COLLECTION_ID || 'saves';
+const LIKES_COLLECTION_ID = env.VITE_APPWRITE_LIKES_COLLECTION_ID || 'likes';
 const COMMENTS_COLLECTION_ID = env.VITE_APPWRITE_COMMENTS_COLLECTION_ID || 'comments';
 const STORAGE_ID = env.VITE_APPWRITE_STORAGE_ID || 'media';
 
@@ -149,6 +150,11 @@ async function setup() {
         attributes: [] // Only relationships
       },
       {
+        id: LIKES_COLLECTION_ID,
+        name: 'Likes',
+        attributes: [] // Only relationships
+      },
+      {
         id: COMMENTS_COLLECTION_ID,
         name: 'Comments',
         attributes: [
@@ -168,7 +174,14 @@ async function setup() {
         });
         console.log(`✅ Collection "${col.name}" created.`);
       } catch (e) {
-        if (e.status === 409) console.log(`ℹ️  Collection "${col.name}" already exists.`);
+        if (e.status === 409) {
+          console.log(`ℹ️  Collection "${col.name}" already exists. Updating permissions...`);
+          await api('PUT', `/databases/${DATABASE_ID}/collections/${col.id}`, {
+            name: col.name,
+            permissions: ['read("any")', 'create("any")', 'update("any")', 'delete("any")'],
+            documentSecurity: false
+          });
+        }
         else throw e;
       }
 
@@ -219,19 +232,11 @@ async function setup() {
     // 1. Post -> Creator (Many to One)
     await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', true, 'posts', 'cascade');
     
-    // 2. Post <-> Likes (Many to Many)
-    await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToMany', 'likes', true, 'liked', 'cascade');
-    
-    // 3. Save -> User (Many to One)
     await createRel(SAVES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'save', 'cascade');
-    
-    // 4. Save -> Post (Many to One)
     await createRel(SAVES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', false, '', 'cascade');
-    
-    // 5. Comment -> Creator (Many to One)
+    await createRel(LIKES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'liked', 'cascade');
+    await createRel(LIKES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'likes', 'cascade');
     await createRel(COMMENTS_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', false, '', 'cascade');
-    
-    // 6. Comment -> Post (Many to One)
     await createRel(COMMENTS_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'comments', 'cascade');
 
     console.log('\n✅ All-in-one setup completed successfully!');
