@@ -17,20 +17,60 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
+@layer base {
+  :root {
+    /* DEFAULT DARK THEME */
+    --primary-500: #877eff;
+    --primary-600: #5d5fef;
+    --secondary-500: #ffb620;
+    --off-white: #d0dfff;
+    --red: #ff5a5a;
+    
+    --dark-1: #000000;
+    --dark-2: #09090a;
+    --dark-3: #101012;
+    --dark-4: #1f1f22;
+    
+    --light-1: #ffffff;
+    --light-2: #efefef;
+    --light-3: #7878a3;
+    --light-4: #5c5c7b;
+  }
+
+  /* LIGHT THEME OVERRIDES */
+  .light {
+    --primary-500: #625aff; /* Slightly darker for better contrast on white */
+    
+    /* Invert Backgrounds: Dark becomes Light */
+    --dark-1: #ffffff; /* Main Background */
+    --dark-2: #f8f9fa; /* Sidebar/Card Background */
+    --dark-3: #f1f2f4; /* Input Background */
+    --dark-4: #e2e4e8; /* Borders/Separators */
+    
+    /* Invert Text: Light becomes Dark */
+    --light-1: #09090b; /* Main Text */
+    --light-2: #1f2937; /* Secondary Text */
+    --light-3: #64748b; /* Muted Text */
+    --light-4: #94a3b8; /* Disabled/Subtle Text */
+  }
+}
+
 @theme {
-  --color-primary-500: #877eff;
-  --color-primary-600: #5d5fef;
-  --color-secondary-500: #ffb620;
-  --color-off-white: #d0dfff;
-  --color-red: #ff5a5a;
-  --color-dark-1: #000000;
-  --color-dark-2: #09090a;
-  --color-dark-3: #101012;
-  --color-dark-4: #1f1f22;
-  --color-light-1: #ffffff;
-  --color-light-2: #efefef;
-  --color-light-3: #7878a3;
-  --color-light-4: #5c5c7b;
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-secondary-500: var(--secondary-500);
+  --color-off-white: var(--off-white);
+  --color-red: var(--red);
+  
+  --color-dark-1: var(--dark-1);
+  --color-dark-2: var(--dark-2);
+  --color-dark-3: var(--dark-3);
+  --color-dark-4: var(--dark-4);
+  
+  --color-light-1: var(--light-1);
+  --color-light-2: var(--light-2);
+  --color-light-3: var(--light-3);
+  --color-light-4: var(--light-4);
 
   --breakpoint-xs: 480px;
 
@@ -144,7 +184,7 @@
   }
 
   body {
-    @apply bg-dark-1 text-white min-h-screen font-inter;
+    @apply bg-dark-1 text-light-1 min-h-screen font-inter overflow-x-hidden transition-colors duration-300;
   }
 }
 
@@ -302,7 +342,7 @@
   /* SHADCN COMPONENTS */
   /* Form */
   .shad-form_label {
-    @apply !text-white;
+    @apply !text-light-1;
   }
 
   .shad-form_message {
@@ -310,11 +350,11 @@
   }
 
   .shad-input {
-    @apply !h-12 !bg-dark-4 !border-none placeholder:!text-light-4 focus-visible:!ring-1 focus-visible:!ring-offset-1 !ring-offset-light-3;
+    @apply !h-12 !bg-dark-4 !border-none placeholder:!text-light-4 focus-visible:!ring-1 focus-visible:!ring-offset-1 !ring-offset-light-3 !text-light-1;
   }
 
   .shad-textarea {
-    @apply !h-36 !bg-dark-3 !rounded-xl !border-none focus-visible:!ring-1 focus-visible:!ring-offset-1 !ring-offset-light-3;
+    @apply !h-36 !bg-dark-3 !rounded-xl !border-none focus-visible:!ring-1 focus-visible:!ring-offset-1 !ring-offset-light-3 !text-light-1;
   }
 
   /* Button */
@@ -327,6 +367,6 @@
   }
 
   .shad-button_ghost {
-    @apply !flex !gap-4 !items-center !justify-start hover:!bg-transparent hover:!text-white;
+    @apply !flex !gap-4 !items-center !justify-start hover:!bg-transparent hover:!text-light-1;
   }
 }

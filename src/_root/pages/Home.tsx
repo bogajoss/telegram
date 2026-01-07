@@ -61,9 +61,9 @@ const Home = () => {
                   
                   {/* Insert "People You May Know" after the second post (index 1) */}
                   {index === 1 && creators?.documents && creators.documents.length > 0 && (
-                    <div className="w-full max-w-screen-sm mx-auto">
+                    <div className="w-full max-w-screen-sm mx-auto overflow-hidden">
                       <h3 className="h3-bold text-light-1 mb-4 px-2">People You May Know</h3>
-                      <ScrollArea className="w-full whitespace-nowrap rounded-md border border-dark-4 bg-dark-2 p-4">
+                      <ScrollArea className="w-full whitespace-nowrap rounded-md border border-dark-4 bg-dark-2 p-4 max-w-[100vw]">
                         <div className="flex w-max space-x-4">
                           {creators.documents.map((creator: IUserDocument) => (
                             <div key={creator.$id} className="w-[180px] shrink-0">

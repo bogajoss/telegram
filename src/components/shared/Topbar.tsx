@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Topbar = () => {
         </Link>
 
         <div className="flex gap-4 items-center">
+          <ThemeToggle />
           <NotificationBell />
           <Button
             variant="ghost"

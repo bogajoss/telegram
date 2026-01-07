@@ -7,6 +7,7 @@ import { Loader, VerifiedBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useSignOutAccount, useGetUnreadCount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
@@ -29,9 +30,12 @@ const LeftSidebar = () => {
   return (
     <nav className="leftsidebar">
       <div className="flex flex-col gap-11">
-        <Link to="/" className="flex gap-3 items-center">
-          <span className="h3-bold">Genjam</span>
-        </Link>
+        <div className="flex justify-between items-center w-full">
+          <Link to="/" className="flex gap-3 items-center">
+            <span className="h3-bold">Genjam</span>
+          </Link>
+          <ThemeToggle />
+        </div>
 
         {isLoading || !user.email ? (
           <div className="h-14">

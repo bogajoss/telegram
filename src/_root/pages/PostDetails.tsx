@@ -154,7 +154,7 @@ const PostDetails = () => {
                 <img
                   src={post?.imageUrl}
                   alt="creator"
-                  className="post_details-img w-full h-full object-contain"
+                  className="w-full h-full object-contain"
                 />
               </CarouselItem>
             </CarouselContent>
