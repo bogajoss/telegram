@@ -176,9 +176,13 @@ async function setup() {
         try {
           const payload = { key: attr.key, required: attr.required, array: attr.array || false };
           if (attr.type === 'string') payload.size = attr.size || 255;
-          if (attr.default !== undefined) payload.default = attr.default;
-
-          await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/${attr.type}`, payload);
+          if (attr.type === 'url') {
+             // URL type in Appwrite is a string with URL format
+             await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/string`, { ...payload, size: 2000, format: 'url' });
+          } else {
+            if (attr.default !== undefined) payload.default = attr.default;
+            await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/${attr.type}`, payload);
+          }
           console.log(`   + Attribute "${attr.key}" created.`);
           await new Promise(r => setTimeout(r, 600)); 
         } catch (e) {
@@ -199,7 +203,7 @@ async function setup() {
     // --- 5. Create Relationships ---
     console.log('\n--- Creating Relationships ---');
 
-    const createRel = async (colId, relColId, type, key, twoWay = false, twoWayKey = '', onDelete = 'setNull') => {
+    const createRel = async (colId, relColId, type, key, twoWay = false, twoWayKey = '', onDelete = 'cascade') => {
       try {
         const payload = { relatedCollectionId: relColId, type, twoWay, key, onDelete };
         if (twoWay && twoWayKey) payload.twoWayKey = twoWayKey;
@@ -212,11 +216,22 @@ async function setup() {
     };
 
     // Relationships
+    // 1. Post -> Creator (Many to One)
     await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', true, 'posts', 'cascade');
+    
+    // 2. Post <-> Likes (Many to Many)
     await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToMany', 'likes', true, 'liked', 'cascade');
+    
+    // 3. Save -> User (Many to One)
     await createRel(SAVES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'save', 'cascade');
+    
+    // 4. Save -> Post (Many to One)
     await createRel(SAVES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', false, '', 'cascade');
+    
+    // 5. Comment -> Creator (Many to One)
     await createRel(COMMENTS_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', false, '', 'cascade');
+    
+    // 6. Comment -> Post (Many to One)
     await createRel(COMMENTS_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'comments', 'cascade');
 
     console.log('\n✅ All-in-one setup completed successfully!');

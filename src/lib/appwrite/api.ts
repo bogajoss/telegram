@@ -106,9 +106,17 @@ export async function getCurrentUser() {
     if (!currentUser) throw Error;
 
     const userDoc = currentUser.documents[0];
+    
+    // Fetch the full user document to ensure relationships are populated
+    const fullUser = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userDoc.$id
+    );
+
     return {
-      ...userDoc,
-      following: (userDoc as any).followingUsers || userDoc.following || [],
+      ...fullUser,
+      following: (fullUser as any).followingUsers || fullUser.following || [],
     } as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
@@ -582,7 +590,6 @@ export async function followUser(userId: string, followerId: string, followingAr
     if (!updatedFollower) throw Error;
 
     // 2. Update the target user's "followers" list
-    // First get the target user to get their current followers
     const targetUser = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
@@ -591,8 +598,8 @@ export async function followUser(userId: string, followerId: string, followingAr
 
     if (!targetUser) throw Error;
 
-    let followersArray = targetUser.followers?.map((u: any) => 
-      typeof u === "string" ? u : u.$id
+    let followersArray = (targetUser.followers as any[])?.map((u: any) => 
+      typeof u === "string" ? u : u.$id || u.id
     ) || [];
 
     const isNowFollowing = followingArray.includes(userId);
@@ -614,7 +621,10 @@ export async function followUser(userId: string, followerId: string, followingAr
       }
     );
 
-    return updatedFollower as unknown as IUserDocument;
+    return {
+      ...updatedFollower,
+      following: (updatedFollower as any).followingUsers || updatedFollower.following || [],
+    } as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }
