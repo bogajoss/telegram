@@ -375,6 +375,22 @@ export async function deletePost(postId?: string, imageId?: string) {
 // ============================== LIKE POST
 export async function likePost(userId: string, postId: string) {
   try {
+    // First check if this like already exists to prevent duplicates
+    const existingLikes = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.likesCollectionId,
+      [
+        Query.equal("user", userId),
+        Query.equal("post", postId)
+      ]
+    );
+
+    // If like already exists, return it instead of creating a duplicate
+    if (existingLikes.documents.length > 0) {
+      console.log("Like already exists, returning existing record");
+      return existingLikes.documents[0] as unknown as ILikeDocument;
+    }
+
     const newLike = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.likesCollectionId,

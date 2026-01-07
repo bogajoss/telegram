@@ -19,6 +19,8 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const location = useLocation();
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isLikingInProgress, setIsLikingInProgress] = useState(false);
+  const [isSavingInProgress, setIsSavingInProgress] = useState(false);
 
   const { mutate: likePost } = useLikePost();
   const { mutate: deleteLikedPost } = useDeleteLikedPost();
@@ -48,13 +50,35 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
 
+    // Prevent duplicate likes while request is in progress
+    if (isLikingInProgress) return;
+
     if (likedPostRecord) {
+      setIsLikingInProgress(true);
       setIsLiked(false);
-      return deleteLikedPost(likedPostRecord.$id);
+      deleteLikedPost(likedPostRecord.$id, {
+        onSuccess: () => setIsLikingInProgress(false),
+        onError: () => {
+          setIsLiked(true);
+          setIsLikingInProgress(false);
+        }
+      });
+      return;
     }
 
-    likePost({ userId: userId, postId: post.$id });
+    // Prevent creating duplicate likes
+    setIsLikingInProgress(true);
     setIsLiked(true);
+    likePost(
+      { userId: userId, postId: post.$id },
+      {
+        onSuccess: () => setIsLikingInProgress(false),
+        onError: () => {
+          setIsLiked(false);
+          setIsLikingInProgress(false);
+        }
+      }
+    );
   };
 
   const handleSavePost = (
@@ -62,13 +86,34 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
 
+    // Prevent duplicate saves while request is in progress
+    if (isSavingInProgress) return;
+
     if (savedPostRecord) {
+      setIsSavingInProgress(true);
       setIsSaved(false);
-      return deleteSavePost(savedPostRecord.$id);
+      deleteSavePost(savedPostRecord.$id, {
+        onSuccess: () => setIsSavingInProgress(false),
+        onError: () => {
+          setIsSaved(true);
+          setIsSavingInProgress(false);
+        }
+      });
+      return;
     }
 
-    savePost({ userId: userId, postId: post.$id });
+    setIsSavingInProgress(true);
     setIsSaved(true);
+    savePost(
+      { userId: userId, postId: post.$id },
+      {
+        onSuccess: () => setIsSavingInProgress(false),
+        onError: () => {
+          setIsSaved(false);
+          setIsSavingInProgress(false);
+        }
+      }
+    );
   };
 
   const containerStyles = location.pathname.startsWith("/profile")
@@ -89,7 +134,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           width={20}
           height={20}
           onClick={(e) => handleLikePost(e)}
-          className="cursor-pointer"
+          className={`cursor-pointer transition-opacity ${isLikingInProgress ? "opacity-50 pointer-events-none" : ""}`}
         />
         <p className="small-medium lg:base-medium">{post?.likes?.length || 0}</p>
       </div>
@@ -100,7 +145,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           alt="share"
           width={20}
           height={20}
-          className="cursor-pointer"
+          className={`cursor-pointer transition-opacity ${isSavingInProgress ? "opacity-50 pointer-events-none" : ""}`}
           onClick={(e) => handleSavePost(e)}
         />
       </div>
