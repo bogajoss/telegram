@@ -30,20 +30,25 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const { data: currentUser } = useGetCurrentUser();
 
   const likedPostRecord = post?.likes?.find(
-    (record: ILikeDocument) => (record.user.$id || (record.user as any)) === userId
+    (record: ILikeDocument) => {
+      const recordUserId = typeof record?.user === "string" 
+        ? record.user 
+        : record?.user?.$id;
+      return recordUserId === userId;
+    }
   );
 
   useEffect(() => {
     setIsLiked(!!likedPostRecord);
-  }, [likedPostRecord]);
+  }, [likedPostRecord, userId]);
 
   const savedPostRecord = currentUser?.save?.find(
-    (record: ISaveDocument) => record.post.$id === post.$id
+    (record: ISaveDocument) => record?.post?.$id === post?.$id
   );
 
   useEffect(() => {
     setIsSaved(!!savedPostRecord);
-  }, [currentUser, savedPostRecord]);
+  }, [currentUser, savedPostRecord, post?.$id]);
 
   const handleLikePost = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
@@ -136,7 +141,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           onClick={(e) => handleLikePost(e)}
           className={`cursor-pointer transition-opacity ${isLikingInProgress ? "opacity-50 pointer-events-none" : ""}`}
         />
-        <p className="small-medium lg:base-medium">{post?.likes?.length || 0}</p>
+        <p className="small-medium lg:base-medium">{post?.likes?.length ?? 0}</p>
       </div>
 
       <div className="flex gap-2">

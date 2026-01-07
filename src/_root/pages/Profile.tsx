@@ -42,16 +42,22 @@ const Profile = () => {
       </div>
     );
 
-  const isFollowing = loggedInUser?.following?.some((u: any) => 
-    typeof u === "string" ? u === currentUser.$id : u.$id === currentUser.$id
-  );
+  const isFollowing = loggedInUser?.following?.some((u: any) => {
+    const followingId = typeof u === "string" ? u : u?.$id;
+    return followingId === currentUser?.$id;
+  }) ?? false;
 
   const handleFollowUser = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    let followingArray = loggedInUser?.following?.map((u: any) => 
-      typeof u === "string" ? u : u.$id
-    ) || [];
+    if (!currentUser?.$id || !loggedInUser?.$id) {
+      console.error("Missing user IDs for follow action");
+      return;
+    }
+
+    let followingArray = (loggedInUser?.following ?? []).map((u: any) => 
+      typeof u === "string" ? u : u?.$id
+    ) as string[];
 
     if (isFollowing) {
       followingArray = followingArray.filter((followingId: string) => followingId !== currentUser.$id);
@@ -59,7 +65,7 @@ const Profile = () => {
       followingArray.push(currentUser.$id);
     }
 
-    followUser({ userId: currentUser.$id, followerId: loggedInUser?.$id || "", followingArray });
+    followUser({ userId: currentUser.$id, followerId: loggedInUser.$id, followingArray });
   };
 
   return (
@@ -68,7 +74,7 @@ const Profile = () => {
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
             src={
-              currentUser.imageUrl || "/assets/icons/profile-placeholder.svg"
+              currentUser?.imageUrl || "/assets/icons/profile-placeholder.svg"
             }
             alt="profile"
             className="w-28 h-28 lg:h-36 lg:w-36 rounded-full"
@@ -76,22 +82,22 @@ const Profile = () => {
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full flex items-center justify-center xl:justify-start gap-1">
-                {currentUser.name}
-                {currentUser.is_verified && <VerifiedBadge className="w-6 h-6 lg:w-8 lg:h-8" />}
+                {currentUser?.name || "Unknown User"}
+                {currentUser?.is_verified && <VerifiedBadge className="w-6 h-6 lg:w-8 lg:h-8" />}
               </h1>
               <p className="small-regular md:body-medium text-light-3 text-center xl:text-left">
-                @{currentUser.username}
+                @{currentUser?.username || "unknown"}
               </p>
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={userPosts?.documents.length || 0} label="Posts" />
-              <StatBlock value={currentUser.followers?.length || 0} label="Followers" />
-              <StatBlock value={currentUser.following?.length || 0} label="Following" />
+              <StatBlock value={userPosts?.documents?.length ?? 0} label="Posts" />
+              <StatBlock value={currentUser?.followers?.length ?? 0} label="Followers" />
+              <StatBlock value={currentUser?.following?.length ?? 0} label="Following" />
             </div>
 
-            <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
-              {currentUser.bio}
+            <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm line-clamp-3">
+              {currentUser?.bio || ""}
             </p>
           </div>
 
