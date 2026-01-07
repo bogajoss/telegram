@@ -8,10 +8,7 @@ const Saved = () => {
   const savePosts = currentUser?.save
     ?.map((savePost: ISaveDocument) => ({
       ...savePost.post,
-      creator: {
-        ...savePost.post.creator,
-        imageUrl: currentUser.imageUrl,
-      },
+      creator: savePost.post.creator,
     }))
     .reverse() as unknown as IPostDocument[];
 

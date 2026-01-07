@@ -35,7 +35,10 @@ const CommentItem = ({ comment, userId, onDelete }: { comment: any, userId: stri
       </Link>
       <div className="flex flex-col flex-1">
         <div className="flex justify-between items-center">
-          <p className="small-semibold text-light-1">{creator.name}</p>
+          <p className="small-semibold text-light-1 flex items-center gap-1">
+            {creator.name}
+            {(creator as any)?.is_verified && <VerifiedBadge className="w-3 h-3" />}
+          </p>
           {userId === creator.$id && (
             <img
               src="/assets/icons/delete.svg"
