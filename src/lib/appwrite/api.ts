@@ -15,17 +15,21 @@ async function enrichPostsWithLikes(posts: any[]) {
   try {
     if (!posts || posts.length === 0) return posts;
 
-    // Fetch all likes for these posts
+    // Filter out posts without $id
+    const validPosts = posts.filter(p => p && p.$id);
+    if (validPosts.length === 0) return posts;
+
+    // Fetch all likes for these posts (without Query.select since it doesn't work with relationships)
     const likes = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.likesCollectionId,
-      [Query.select(['$id', 'user', 'post'])]
+      [Query.limit(1000)] // Fetch up to 1000 likes
     );
 
     // Attach likes to each post
     return posts.map(post => ({
       ...post,
-      likes: (likes.documents.filter(like => like.post === post.$id) || []) as any
+      likes: post.$id ? (likes.documents.filter(like => like.post === post.$id) || []) as any : []
     })) as IPostDocument[];
   } catch (error) {
     console.error("Error enriching posts with likes:", error);
