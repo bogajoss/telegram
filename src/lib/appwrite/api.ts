@@ -4,6 +4,36 @@ import { appwriteConfig, account, databases, storage, avatars } from "./config";
 import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument, ILikeDocument, INewComment, ICommentDocument } from "@/types";
 
 // ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+/**
+ * Enrich posts with likes relationship data
+ * Fetches likes for each post and attaches them
+ */
+async function enrichPostsWithLikes(posts: any[]) {
+  try {
+    if (!posts || posts.length === 0) return posts;
+
+    // Fetch all likes for these posts
+    const likes = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.likesCollectionId,
+      [Query.select(['$id', 'user', 'post'])]
+    );
+
+    // Attach likes to each post
+    return posts.map(post => ({
+      ...post,
+      likes: (likes.documents.filter(like => like.post === post.$id) || []) as any
+    })) as IPostDocument[];
+  } catch (error) {
+    console.error("Error enriching posts with likes:", error);
+    return posts;
+  }
+}
+
+// ============================================================
 // AUTH
 // ============================================================
 
@@ -232,15 +262,21 @@ export async function deleteFile(fileId: string) {
 // ============================== GET POSTS
 export async function searchPosts(searchTerm: string) {
   try {
-    const posts = await databases.listDocuments(
+    const postsResult = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       [Query.search("caption", searchTerm)]
     );
 
-    if (!posts) throw Error;
+    if (!postsResult) throw Error;
 
-    return posts as unknown as Models.DocumentList<IPostDocument>;
+    // Enrich posts with likes data
+    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+
+    return {
+      ...postsResult,
+      documents: enrichedPosts
+    } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }
@@ -254,15 +290,21 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number | stri
   }
 
   try {
-    const posts = await databases.listDocuments(
+    const postsResult = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       queries
     );
 
-    if (!posts) throw Error;
+    if (!postsResult) throw Error;
 
-    return posts as unknown as Models.DocumentList<IPostDocument>;
+    // Enrich posts with likes data
+    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+
+    return {
+      ...postsResult,
+      documents: enrichedPosts
+    } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }
@@ -281,7 +323,9 @@ export async function getPostById(postId?: string) {
 
     if (!post) throw Error;
 
-    return post as unknown as IPostDocument;
+    // Enrich post with likes data
+    const enrichedPosts = await enrichPostsWithLikes([post as unknown as any]);
+    return enrichedPosts[0];
   } catch (error) {
     console.log(error);
   }
@@ -550,15 +594,21 @@ export async function getUserPosts(userId?: string) {
   if (!userId) return;
 
   try {
-    const post = await databases.listDocuments(
+    const postsResult = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
     );
 
-    if (!post) throw Error;
+    if (!postsResult) throw Error;
 
-    return post as unknown as Models.DocumentList<IPostDocument>;
+    // Enrich posts with likes data
+    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+
+    return {
+      ...postsResult,
+      documents: enrichedPosts
+    } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }
@@ -567,15 +617,21 @@ export async function getUserPosts(userId?: string) {
 // ============================== GET POPULAR POSTS (BY HIGHEST LIKE COUNT)
 export async function getRecentPosts() {
   try {
-    const posts = await databases.listDocuments(
+    const postsResult = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       [Query.orderDesc("$createdAt"), Query.limit(20)]
     );
 
-    if (!posts) throw Error;
+    if (!postsResult) throw Error;
 
-    return posts as unknown as Models.DocumentList<IPostDocument>;
+    // Enrich posts with likes data
+    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+
+    return {
+      ...postsResult,
+      documents: enrichedPosts
+    } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }
