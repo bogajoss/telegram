@@ -1,5 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
+@font-face {
+  font-family: "Hind Siliguri";
+  src: url("/assets/fonts/HindSiliguri-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Hind Siliguri";
+  src: url("/assets/fonts/HindSiliguri-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
@@ -23,7 +37,7 @@
   --width-420: 420px;
   --width-465: 465px;
 
-  --font-inter: "Inter", sans-serif;
+  --font-inter: "Hind Siliguri", "Inter", sans-serif;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;

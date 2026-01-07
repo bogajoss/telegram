@@ -17,7 +17,7 @@ type PostStatsProps = {
 
 const PostStats = ({ post, userId }: PostStatsProps) => {
   const location = useLocation();
-  const likesList = post.likes.map((user: IUserDocument) => user.$id);
+  const likesList = post?.likes?.map((user: IUserDocument) => user.$id) || [];
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
@@ -28,7 +28,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
   const { data: currentUser } = useGetCurrentUser();
 
-  const savedPostRecord = currentUser?.save.find(
+  const savedPostRecord = currentUser?.save?.find(
     (record: ISaveDocument) => record.post.$id === post.$id
   );
 
