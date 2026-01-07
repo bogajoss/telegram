@@ -24,6 +24,12 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
 
+  useEffect(() => {
+    setLikes(post?.likes?.map((user: IUserDocument | string) => 
+      typeof user === "string" ? user : user.$id || (user as any).id
+    ) || []);
+  }, [post]);
+
   const { mutate: likePost } = useLikePost();
   const { mutate: savePost } = useSavePost();
   const { mutate: deleteSavePost } = useDeleteSavedPost();
