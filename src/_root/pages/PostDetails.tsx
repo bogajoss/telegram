@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { Loader } from "@/components/shared";
 import { GridPostList, PostStats } from "@/components/shared";
 
@@ -8,16 +9,64 @@ import {
   useGetPostById,
   useGetUserPosts,
   useDeletePost,
+  useGetUserById,
+  useGetPostComments,
+  useCreateComment,
+  useDeleteComment,
 } from "@/lib/react-query/queries";
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
+
+const CommentItem = ({ comment, userId, onDelete }: { comment: any, userId: string, onDelete: (id: string) => void }) => {
+  const creatorId = typeof comment.creator === "string" ? comment.creator : comment.creator?.$id;
+  const { data: fetchedCreator } = useGetUserById(typeof comment.creator === "string" ? comment.creator : "");
+  
+  const creator = typeof comment.creator === "string" ? fetchedCreator : comment.creator;
+
+  if (!creator) return null;
+
+  return (
+    <div className="flex gap-3 items-start">
+      <Link to={`/profile/${creator.$id}`}>
+        <img
+          src={creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
+          alt="creator"
+          className="w-8 h-8 rounded-full"
+        />
+      </Link>
+      <div className="flex flex-col flex-1">
+        <div className="flex justify-between items-center">
+          <p className="small-semibold text-light-1">{creator.name}</p>
+          {userId === creator.$id && (
+            <img
+              src="/assets/icons/delete.svg"
+              alt="delete"
+              width={16}
+              height={16}
+              className="cursor-pointer"
+              onClick={() => onDelete(comment.$id)}
+            />
+          )}
+        </div>
+        <p className="small-medium text-light-2">{comment.content}</p>
+        <p className="subtle-semibold text-light-3">
+          {multiFormatDateString(comment.$createdAt)}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const PostDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useUserContext();
+  const [comment, setComment] = useState("");
 
   const { data: post, isLoading } = useGetPostById(id);
+  const { data: comments, isLoading: isCommentsLoading } = useGetPostComments(id || "");
+  const { mutate: createComment, isPending: isCreatingComment } = useCreateComment();
+  const { mutate: deleteComment } = useDeleteComment();
 
   const creatorId = typeof post?.creator === "string"
     ? post.creator
@@ -41,6 +90,22 @@ const PostDetails = () => {
   const handleDeletePost = () => {
     deletePost({ postId: id, imageId: post?.imageId || "" });
     navigate(-1);
+  };
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comment.trim()) return;
+
+    createComment({
+      content: comment,
+      postId: id || "",
+      userId: user.id,
+    });
+    setComment("");
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    deleteComment(commentId);
   };
 
   return (
@@ -147,6 +212,42 @@ const PostDetails = () => {
 
             <div className="w-full">
               <PostStats post={post} userId={user.id} />
+            </div>
+
+            {/* COMMENTS SECTION */}
+            <div className="flex flex-col gap-4 w-full mt-4">
+              <hr className="border w-full border-dark-4/80" />
+              <h4 className="body-bold text-light-1">Comments</h4>
+              
+              <form onSubmit={handleAddComment} className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Write a comment..."
+                  className="shad-input"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+                <Button type="submit" className="shad-button_primary" disabled={isCreatingComment}>
+                  {isCreatingComment ? "..." : "Post"}
+                </Button>
+              </form>
+
+              <div className="flex flex-col gap-4 max-h-80 overflow-y-auto custom-scrollbar">
+                {isCommentsLoading ? (
+                  <Loader />
+                ) : comments?.documents.length === 0 ? (
+                  <p className="text-light-4 small-medium">No comments yet.</p>
+                ) : (
+                  comments?.documents.map((c: any) => (
+                    <CommentItem 
+                      key={c.$id} 
+                      comment={c} 
+                      userId={user.id} 
+                      onDelete={handleDeleteComment} 
+                    />
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

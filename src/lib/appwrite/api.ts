@@ -1,7 +1,7 @@
 import { ID, Query, ImageGravity, Models } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument, INewComment, ICommentDocument } from "@/types";
 
 // ============================================================
 // AUTH
@@ -412,6 +412,62 @@ export async function deleteSavedPost(savedRecordId: string) {
   }
 }
 
+// ============================== CREATE COMMENT
+export async function createComment(comment: INewComment) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      ID.unique(),
+      {
+        content: comment.content,
+        creator: comment.userId,
+        post: comment.postId,
+      }
+    );
+
+    if (!newComment) throw Error;
+
+    return newComment as unknown as ICommentDocument;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET POST COMMENTS
+export async function getPostComments(postId: string) {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      [Query.equal("post", postId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!comments) throw Error;
+
+    return comments as unknown as Models.DocumentList<ICommentDocument>;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== DELETE COMMENT
+export async function deleteComment(commentId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      commentId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // ============================== GET USER'S POST
 export async function getUserPosts(userId?: string) {
   if (!userId) return;
@@ -487,6 +543,26 @@ export async function getUserById(userId: string) {
     if (!user) throw Error;
 
     return user as unknown as IUserDocument;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== FOLLOW / UNFOLLOW USER
+export async function followUser(followerId: string, followingArray: string[]) {
+  try {
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      followerId,
+      {
+        following: followingArray,
+      }
+    );
+
+    if (!updatedUser) throw Error;
+
+    return updatedUser as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }

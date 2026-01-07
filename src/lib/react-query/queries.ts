@@ -25,8 +25,12 @@ import {
   searchPosts,
   savePost,
   deleteSavedPost,
+  followUser,
+  createComment,
+  getPostComments,
+  deleteComment,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewComment } from "@/types";
 
 // ============================================================
 // AUTH QUERIES
@@ -241,6 +245,63 @@ export const useUpdateUser = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      followerId,
+      followingArray,
+    }: {
+      userId: string;
+      followerId: string;
+      followingArray: string[];
+    }) => followUser(followerId, followingArray),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS],
+      });
+    },
+  });
+};
+
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (comment: INewComment) => createComment(comment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_COMMENTS],
+      });
+    },
+  });
+};
+
+export const useGetPostComments = (postId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId],
+    queryFn: () => getPostComments(postId),
+    enabled: !!postId,
+  });
+};
+
+export const useDeleteComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (commentId: string) => deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_COMMENTS],
       });
     },
   });

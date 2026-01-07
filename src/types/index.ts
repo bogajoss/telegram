@@ -62,6 +62,7 @@ export type IPostDocument = Models.Document & {
   location: string;
   tags: string[];
   likes: IUserDocument[];
+  comments: ICommentDocument[];
 };
 
 export type IUserDocument = Models.Document & {
@@ -74,4 +75,18 @@ export type IUserDocument = Models.Document & {
   posts: IPostDocument[];
   liked: IPostDocument[];
   save: ISaveDocument[];
+  followers: IUserDocument[];
+  following: IUserDocument[];
+};
+
+export type INewComment = {
+  content: string;
+  postId: string;
+  userId: string;
+};
+
+export type ICommentDocument = Models.Document & {
+  content: string;
+  creator: IUserDocument;
+  post: IPostDocument;
 };

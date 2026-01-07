@@ -2,13 +2,33 @@ import { Link } from "react-router-dom";
 
 import { Button } from "../ui/button";
 import { IUserDocument } from "@/types";
+import { useFollowUser, useGetCurrentUser } from "@/lib/react-query/queries";
 
 type UserCardProps = {
   user: IUserDocument;
 };
 
 const UserCard = ({ user }: UserCardProps) => {
+  const { data: currentUser } = useGetCurrentUser();
+  const { mutate: followUser } = useFollowUser();
+
   const userId = user.$id || (user as any).id;
+  const isFollowing = currentUser?.following?.some((u: any) => u.$id === userId);
+
+  const handleFollowUser = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let followingArray = currentUser?.following?.map((u: any) => u.$id) || [];
+
+    if (isFollowing) {
+      followingArray = followingArray.filter((followingId: string) => followingId !== userId);
+    } else {
+      followingArray.push(userId);
+    }
+
+    followUser({ userId, followerId: currentUser?.$id || "", followingArray });
+  };
 
   return (
     <Link to={`/profile/${userId || ""}`} className="user-card">
@@ -27,11 +47,17 @@ const UserCard = ({ user }: UserCardProps) => {
         </p>
       </div>
 
-      <Button type="button" size="sm" className="shad-button_primary px-5">
-        Follow
+      <Button 
+        type="button" 
+        size="sm" 
+        className="shad-button_primary px-5"
+        onClick={handleFollowUser}
+      >
+        {isFollowing ? "Unfollow" : "Follow"}
       </Button>
     </Link>
   );
 };
 
 export default UserCard;
+
