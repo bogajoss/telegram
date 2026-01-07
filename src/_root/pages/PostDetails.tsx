@@ -5,6 +5,13 @@ import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Button, Input, Spinner } from "@/components/ui";
 import { Loader, VerifiedBadge } from "@/components/shared";
 import { GridPostList, PostStats } from "@/components/shared";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui";
 
 import {
   useGetPostById,
@@ -141,11 +148,21 @@ const PostDetails = () => {
         <Loader />
       ) : (
         <div className="post_details-card">
-          <img
-            src={post?.imageUrl}
-            alt="creator"
-            className="post_details-img"
-          />
+          <Carousel className="w-full xl:w-[48%] rounded-t-[30px] xl:rounded-l-[24px] xl:rounded-tr-none bg-dark-1 overflow-hidden">
+            <CarouselContent>
+              <CarouselItem>
+                <img
+                  src={post?.imageUrl}
+                  alt="creator"
+                  className="post_details-img w-full h-full object-contain"
+                />
+              </CarouselItem>
+            </CarouselContent>
+            <div className="hidden">
+              <CarouselPrevious />
+              <CarouselNext />
+            </div>
+          </Carousel>
 
           <div className="post_details-info">
             <div className="flex-between w-full">

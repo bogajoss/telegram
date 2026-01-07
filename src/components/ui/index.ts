@@ -5,3 +5,4 @@ export * from "./label";
 export * from "./textarea";
 export * from "./use-toast";
 export * from "./spinner";
+export * from "./carousel";

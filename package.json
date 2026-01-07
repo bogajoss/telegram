@@ -22,6 +22,7 @@
     "attr-accept": "^2.2.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-tailwindcss": "^3.18.2",

@@ -6,6 +6,13 @@ import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
 import { IPostDocument } from "@/types";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui";
 
 type PostCardProps = {
   post: IPostDocument;
@@ -73,11 +80,22 @@ const PostCard = ({ post }: PostCardProps) => {
           </ul>
         </div>
 
-        <img
-          src={post.imageUrl || "/assets/icons/profile-placeholder.svg"}
-          alt="post image"
-          className="post-card_img"
-        />
+        <Carousel className="w-full">
+          <CarouselContent>
+            <CarouselItem>
+              <img
+                src={post.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                alt="post image"
+                className="post-card_img"
+              />
+            </CarouselItem>
+          </CarouselContent>
+          <div className="hidden">
+            {/* Hidden navigation for single item */}
+            <CarouselPrevious />
+            <CarouselNext />
+          </div>
+        </Carousel>
       </Link>
 
       <PostStats post={post} userId={user.id} />
