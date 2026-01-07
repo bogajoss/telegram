@@ -6,3 +6,4 @@ export * from "./textarea";
 export * from "./use-toast";
 export * from "./spinner";
 export * from "./carousel";
+export * from "./scroll-area";

@@ -1,6 +1,7 @@
 import { Loader, PostCard, UserCard } from "@/components/shared";
 import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
-import { IPostDocument } from "@/types";
+import { IPostDocument, IUserDocument } from "@/types";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Home = () => {
   // const { toast } = useToast();
@@ -52,9 +53,28 @@ const Home = () => {
             <Loader />
           ) : posts.documents.length > 0 ? (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts.documents.map((post: IPostDocument) => (
-                <li key={post.$id} className="flex justify-center w-full">
-                  <PostCard post={post} />
+              {posts.documents.map((post: IPostDocument, index: number) => (
+                <li key={post.$id} className="flex flex-col w-full gap-9">
+                  <div className="flex justify-center w-full">
+                    <PostCard post={post} />
+                  </div>
+                  
+                  {/* Insert "People You May Know" after the second post (index 1) */}
+                  {index === 1 && creators?.documents && creators.documents.length > 0 && (
+                    <div className="w-full max-w-screen-sm mx-auto">
+                      <h3 className="h3-bold text-light-1 mb-4 px-2">People You May Know</h3>
+                      <ScrollArea className="w-full whitespace-nowrap rounded-md border border-dark-4 bg-dark-2 p-4">
+                        <div className="flex w-max space-x-4">
+                          {creators.documents.map((creator: IUserDocument) => (
+                            <div key={creator.$id} className="w-[180px] shrink-0">
+                              <UserCard user={creator} />
+                            </div>
+                          ))}
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
