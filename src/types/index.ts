@@ -69,6 +69,7 @@ export type IPostDocument = Models.Document & {
   location: string;
   tags: string[];
   likes: ILikeDocument[];
+  save: ISaveDocument[];
   comments: ICommentDocument[];
 };
 

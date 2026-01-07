@@ -19,46 +19,55 @@ import {
 // ============================================================
 
 /**
- * Enrich posts with likes relationship data
- * Fetches likes for each post and attaches them
+ * Enrich posts with likes and saves relationship data
  */
-async function enrichPostsWithLikes(posts: any[]) {
+async function enrichPosts(posts: any[]) {
   try {
     if (!posts || posts.length === 0) return posts;
 
-    // Filter out posts without $id
     const validPosts = posts.filter((p) => p && p.$id);
     if (validPosts.length === 0) return posts;
 
     try {
-      // Fetch all likes for these posts (without Query.select since it doesn't work with relationships)
-      const likes = await databases.listDocuments(
-        appwriteConfig.databaseId,
-        appwriteConfig.likesCollectionId,
-        [Query.limit(1000)] // Fetch up to 1000 likes
-      );
+      // Fetch likes and saves in parallel
+      const [likes, saves] = await Promise.all([
+        databases.listDocuments(
+          appwriteConfig.databaseId,
+          appwriteConfig.likesCollectionId,
+          [Query.limit(1000)]
+        ),
+        databases.listDocuments(
+          appwriteConfig.databaseId,
+          appwriteConfig.savesCollectionId,
+          [Query.limit(1000)]
+        )
+      ]);
 
-      // Attach likes to each post, filtering by valid post IDs
       return posts.map((post) => ({
         ...post,
         likes: post?.$id
-          ? ((likes.documents?.filter((like) => like?.post === post.$id) ??
-              []) as any)
+          ? ((likes.documents?.filter((like) => {
+              const likePostId = typeof like?.post === "string" ? like.post : like?.post?.$id;
+              return likePostId === post.$id;
+            }) ?? []) as any)
+          : [],
+        save: post?.$id
+          ? ((saves.documents?.filter((save) => {
+              const savePostId = typeof save?.post === "string" ? save.post : save?.post?.$id;
+              return savePostId === post.$id;
+            }) ?? []) as any)
           : [],
       })) as IPostDocument[];
-    } catch (likesError) {
-      console.error(
-        "Error fetching likes, returning posts without likes:",
-        likesError
-      );
-      // If likes fetch fails, return posts with empty likes array
+    } catch (error) {
+      console.error("Error enriching posts:", error);
       return posts.map((post) => ({
         ...post,
         likes: [],
+        save: [],
       })) as IPostDocument[];
     }
   } catch (error) {
-    console.error("Error enriching posts with likes:", error);
+    console.error("Error in enrichPosts helper:", error);
     return posts;
   }
 }
@@ -314,7 +323,7 @@ export async function searchPosts(searchTerm: string) {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(
+    const enrichedPosts = await enrichPosts(
       postsResult.documents as unknown as any[]
     );
 
@@ -348,7 +357,7 @@ export async function getInfinitePosts({
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(
+    const enrichedPosts = await enrichPosts(
       postsResult.documents as unknown as any[]
     );
 
@@ -375,7 +384,7 @@ export async function getPostById(postId?: string) {
     if (!post) throw Error;
 
     // Enrich post with likes data
-    const enrichedPosts = await enrichPostsWithLikes([post as unknown as any]);
+    const enrichedPosts = await enrichPosts([post as unknown as any]);
     return enrichedPosts[0];
   } catch (error) {
     console.log(error);
@@ -622,6 +631,22 @@ export async function deleteSavedPost(savedRecordId: string) {
   }
 }
 
+// ============================== CHECK IF POST IS SAVED
+export async function checkIsPostSaved(userId: string, postId: string) {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      [Query.equal("user", userId), Query.equal("post", postId)]
+    );
+
+    return result.documents.length > 0 ? result.documents[0] : null;
+  } catch (error) {
+    console.error("Error checking saved status:", error);
+    return null;
+  }
+}
+
 // ============================== GET USER'S LIKED POSTS
 export async function getUserLikedPosts(userId: string) {
   try {
@@ -637,11 +662,14 @@ export async function getUserLikedPosts(userId: string) {
     const posts = await Promise.all(
       likedRecords.documents.map(async (record: any) => {
         try {
-          // record.post is the post ID, fetch the full post document
+          const postId = typeof record.post === "string" ? record.post : record.post?.$id;
+          
+          if (!postId) return null;
+
           const postDoc = await databases.getDocument(
             appwriteConfig.databaseId,
             appwriteConfig.postCollectionId,
-            record.post
+            postId
           );
           return postDoc as unknown as IPostDocument;
         } catch (error) {
@@ -656,11 +684,60 @@ export async function getUserLikedPosts(userId: string) {
       (post): post is IPostDocument => post !== null
     );
 
-    // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(validPosts);
+    // Enrich posts with likes and saves data
+    const enrichedPosts = await enrichPosts(validPosts);
 
     return {
       ...likedRecords,
+      documents: enrichedPosts,
+    } as unknown as Models.DocumentList<IPostDocument>;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET USER'S SAVED POSTS
+export async function getUserSavedPosts(userId: string) {
+  try {
+    const savedRecords = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      [Query.equal("user", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!savedRecords) throw Error;
+
+    // Fetch actual post documents
+    const posts = await Promise.all(
+      savedRecords.documents.map(async (record: any) => {
+        try {
+          const postId = typeof record.post === "string" ? record.post : record.post?.$id;
+          
+          if (!postId) return null;
+
+          const postDoc = await databases.getDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            postId
+          );
+          return postDoc as unknown as IPostDocument;
+        } catch (error) {
+          console.log("Error fetching saved post:", error);
+          return null;
+        }
+      })
+    );
+
+    // Filter out any null posts
+    const validPosts = posts.filter(
+      (post): post is IPostDocument => post !== null
+    );
+
+    // Enrich posts with likes and saves data
+    const enrichedPosts = await enrichPosts(validPosts);
+
+    return {
+      ...savedRecords,
       documents: enrichedPosts,
     } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
@@ -768,7 +845,7 @@ export async function getUserPosts(userId?: string) {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(
+    const enrichedPosts = await enrichPosts(
       postsResult.documents as unknown as any[]
     );
 
@@ -793,7 +870,7 @@ export async function getRecentPosts() {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(
+    const enrichedPosts = await enrichPosts(
       postsResult.documents as unknown as any[]
     );
 

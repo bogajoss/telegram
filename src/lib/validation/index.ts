@@ -7,7 +7,10 @@ export const SignupValidation = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   username: z
     .string()
-    .min(2, { message: "Name must be at least 2 characters." }),
+    .min(2, { message: "Username must be at least 2 characters." })
+    .regex(/^[a-zA-Z0-9_]+$/, {
+      message: "Username can only contain letters, numbers, and underscores (no spaces or special characters like @, <).",
+    }),
   email: z.string().email(),
   password: z
     .string()
@@ -26,7 +29,10 @@ export const ProfileValidation = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   username: z
     .string()
-    .min(2, { message: "Name must be at least 2 characters." }),
+    .min(2, { message: "Username must be at least 2 characters." })
+    .regex(/^[a-zA-Z0-9_]+$/, {
+      message: "Username can only contain letters, numbers, and underscores (no spaces or special characters like @, <).",
+    }),
   email: z.string().email(),
   bio: z.string(),
 });

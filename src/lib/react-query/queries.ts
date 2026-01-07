@@ -17,6 +17,7 @@ import {
   updatePost,
   getUserPosts,
   getUserLikedPosts,
+  getUserSavedPosts,
   deletePost,
   likePost,
   deleteLikedPost,
@@ -141,6 +142,14 @@ export const useGetUserLikedPosts = (userId?: string) => {
   });
 };
 
+export const useGetUserSavedPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_SAVED_POSTS, userId],
+    queryFn: () => getUserSavedPosts(userId || ""),
+    enabled: !!userId,
+  });
+};
+
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -242,6 +251,9 @@ export const useSavePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_SAVED_POSTS],
+      });
     },
   });
 };
@@ -259,6 +271,9 @@ export const useDeleteSavedPost = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_SAVED_POSTS],
       });
     },
   });

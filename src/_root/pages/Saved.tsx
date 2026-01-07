@@ -1,16 +1,11 @@
 import { GridPostList, Loader } from "@/components/shared";
-import { useGetCurrentUser } from "@/lib/react-query/queries";
-import { ISaveDocument, IPostDocument } from "@/types";
+import { useGetCurrentUser, useGetUserSavedPosts } from "@/lib/react-query/queries";
 
 const Saved = () => {
   const { data: currentUser } = useGetCurrentUser();
+  const { data: savedPosts, isLoading } = useGetUserSavedPosts(currentUser?.$id);
 
-  const savePosts = currentUser?.save
-    ?.map((savePost: ISaveDocument) => ({
-      ...savePost.post,
-      creator: savePost.post.creator,
-    }))
-    .reverse() as unknown as IPostDocument[];
+  const savePosts = savedPosts?.documents ?? [];
 
   return (
     <div className="saved-container">
@@ -25,14 +20,14 @@ const Saved = () => {
         <h2 className="h3-bold md:h2-bold text-left w-full">Saved Posts</h2>
       </div>
 
-      {!currentUser ? (
+      {isLoading ? (
         <Loader />
       ) : (
         <ul className="w-full flex justify-center max-w-5xl gap-9">
-          {!savePosts || savePosts.length === 0 ? (
+          {savePosts.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (
-            <GridPostList posts={savePosts} showStats={false} />
+            <GridPostList posts={savePosts} showStats={true} />
           )}
         </ul>
       )}

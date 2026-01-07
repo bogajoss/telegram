@@ -6,7 +6,6 @@ import {
   useDeleteLikedPost,
   useSavePost,
   useDeleteSavedPost,
-  useGetCurrentUser,
 } from "@/lib/react-query/queries";
 import { IPostDocument, ISaveDocument, ILikeDocument } from "@/types";
 
@@ -27,8 +26,6 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const { mutate: savePost } = useSavePost();
   const { mutate: deleteSavePost } = useDeleteSavedPost();
 
-  const { data: currentUser } = useGetCurrentUser();
-
   const likedPostRecord = post?.likes?.find((record: ILikeDocument) => {
     const recordUserId =
       typeof record?.user === "string" ? record.user : record?.user?.$id;
@@ -39,13 +36,15 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     setIsLiked(!!likedPostRecord);
   }, [likedPostRecord, userId]);
 
-  const savedPostRecord = currentUser?.save?.find(
-    (record: ISaveDocument) => record?.post?.$id === post?.$id
-  );
+  const savedPostRecord = post?.save?.find((record: ISaveDocument) => {
+    const recordUserId =
+      typeof record?.user === "string" ? record.user : record?.user?.$id;
+    return recordUserId === userId;
+  });
 
   useEffect(() => {
     setIsSaved(!!savedPostRecord);
-  }, [currentUser, savedPostRecord, post?.$id]);
+  }, [userId, savedPostRecord]);
 
   const handleLikePost = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
@@ -88,7 +87,6 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
 
-    // Prevent duplicate saves while request is in progress
     if (isSavingInProgress) return;
 
     if (savedPostRecord) {
