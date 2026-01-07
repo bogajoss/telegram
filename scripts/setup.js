@@ -190,7 +190,6 @@ async function setup() {
           const payload = { key: attr.key, required: attr.required, array: attr.array || false };
           if (attr.type === 'string') payload.size = attr.size || 255;
           if (attr.type === 'url') {
-             // URL type in Appwrite is a string with URL format
              await api('POST', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/string`, { ...payload, size: 2000, format: 'url' });
           } else {
             if (attr.default !== undefined) payload.default = attr.default;
@@ -232,10 +231,15 @@ async function setup() {
     // 1. Post -> Creator (Many to One)
     await createRel(POST_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', true, 'posts', 'cascade');
     
+    // 2. Saves
     await createRel(SAVES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'save', 'cascade');
     await createRel(SAVES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', false, '', 'cascade');
+    
+    // 3. Likes (Junction table)
     await createRel(LIKES_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'user', true, 'liked', 'cascade');
     await createRel(LIKES_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'likes', 'cascade');
+    
+    // 4. Comments
     await createRel(COMMENTS_COLLECTION_ID, USER_COLLECTION_ID, 'manyToOne', 'creator', false, '', 'cascade');
     await createRel(COMMENTS_COLLECTION_ID, POST_COLLECTION_ID, 'manyToOne', 'post', true, 'comments', 'cascade');
 
@@ -246,6 +250,7 @@ async function setup() {
     console.log(`VITE_APPWRITE_USER_COLLECTION_ID=${USER_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_POST_COLLECTION_ID=${POST_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_SAVES_COLLECTION_ID=${SAVES_COLLECTION_ID}`);
+    console.log(`VITE_APPWRITE_LIKES_COLLECTION_ID=${LIKES_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_COMMENTS_COLLECTION_ID=${COMMENTS_COLLECTION_ID}`);
     console.log(`VITE_APPWRITE_STORAGE_ID=${STORAGE_ID}`);
     console.log('------------------------------------------------');
