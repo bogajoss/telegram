@@ -36,8 +36,8 @@ export async function createUserAccount(user: INewUser) {
 
     return newUser;
   } catch (error) {
-    console.log(error);
-    return error;
+    console.error("Error in createUserAccount:", error);
+    return null;
   }
 }
 
@@ -59,7 +59,7 @@ export async function saveUserToDB(user: {
 
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.error("Error saving user to DB:", error);
   }
 }
 
@@ -70,7 +70,7 @@ export async function signInAccount(user: { email: string; password: string }) {
 
     return session;
   } catch (error) {
-    console.log(error);
+    console.error("Error signing in:", error);
   }
 }
 
