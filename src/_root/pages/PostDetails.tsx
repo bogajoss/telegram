@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import { Button, Input } from "@/components/ui";
-import { Loader } from "@/components/shared";
+import { Loader, VerifiedBadge } from "@/components/shared";
 import { GridPostList, PostStats } from "@/components/shared";
 
 import {
@@ -148,8 +148,9 @@ const PostDetails = () => {
                   className="w-8 h-8 lg:w-12 lg:h-12 rounded-full"
                 />
                 <div className="flex gap-1 flex-col">
-                  <p className="base-medium lg:body-bold text-light-1">
-                    {(creator as any)?.name || "Unknown"}
+                  <p className="base-medium lg:body-bold text-light-1 flex items-center gap-1">
+                    {(creator as any)?.name}
+                    {(creator as any)?.is_verified && <VerifiedBadge />}
                   </p>
                   <div className="flex-center gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular ">

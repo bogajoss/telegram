@@ -1,13 +1,55 @@
 import { Link } from "react-router-dom";
 
-import { PostStats } from "@/components/shared";
+import { PostStats, VerifiedBadge } from "@/components/shared";
 import { useUserContext } from "@/context/AuthContext";
 import { IPostDocument } from "@/types";
+import { useGetUserById } from "@/lib/react-query/queries";
 
 type GridPostListProps = {
   posts: IPostDocument[];
   showUser?: boolean;
   showStats?: boolean;
+};
+
+const GridPostCard = ({ post, showUser, showStats, userId }: { post: IPostDocument, showUser: boolean, showStats: boolean, userId: string }) => {
+  const creatorId = typeof post.creator === "string" 
+    ? post.creator 
+    : post.creator?.$id;
+
+  const { data: fetchedCreator } = useGetUserById(creatorId || "");
+  const creator = typeof post.creator === "string" ? fetchedCreator : post.creator;
+
+  return (
+    <li className="relative aspect-square">
+      <Link to={`/posts/${post.$id}`} className="grid-post_link">
+        <img
+          src={post.imageUrl}
+          alt="post"
+          className="h-full w-full object-cover"
+        />
+      </Link>
+
+      <div className="grid-post_user">
+        {showUser && creator && (
+          <div className="flex items-center justify-start gap-2 flex-1">
+            <img
+              src={
+                (creator as any).imageUrl ||
+                "/assets/icons/profile-placeholder.svg"
+              }
+              alt="creator"
+              className="w-8 h-8 rounded-full"
+            />
+            <p className="line-clamp-1 flex items-center gap-1">
+              {(creator as any).name}
+              {(creator as any).is_verified && <VerifiedBadge className="w-3 h-3" />}
+            </p>
+          </div>
+        )}
+        {showStats && <PostStats post={post} userId={userId} />}
+      </div>
+    </li>
+  );
 };
 
 const GridPostList = ({
@@ -22,32 +64,13 @@ const GridPostList = ({
   return (
     <ul className="grid-container">
       {posts.map((post) => (
-        <li key={post.$id} className="relative aspect-square">
-          <Link to={`/posts/${post.$id}`} className="grid-post_link">
-            <img
-              src={post.imageUrl}
-              alt="post"
-              className="h-full w-full object-cover"
-            />
-          </Link>
-
-          <div className="grid-post_user">
-            {showUser && (
-              <div className="flex items-center justify-start gap-2 flex-1">
-                <img
-                  src={
-                    post.creator.imageUrl ||
-                    "/assets/icons/profile-placeholder.svg"
-                  }
-                  alt="creator"
-                  className="w-8 h-8 rounded-full"
-                />
-                <p className="line-clamp-1">{post.creator.name}</p>
-              </div>
-            )}
-            {showStats && <PostStats post={post} userId={user.id} />}
-          </div>
-        </li>
+        <GridPostCard 
+          key={post.$id} 
+          post={post} 
+          showUser={showUser} 
+          showStats={showStats} 
+          userId={user.id} 
+        />
       ))}
     </ul>
   );

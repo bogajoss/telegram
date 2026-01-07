@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useFollowUser, useGetCurrentUser } from "@/lib/react-query/queries";
+import { useGetUserById, useFollowUser, useGetCurrentUser, useGetUserPosts } from "@/lib/react-query/queries";
 import { GridPostList, Loader, VerifiedBadge } from "@/components/shared";
 
 interface StabBlockProps {
@@ -31,6 +31,7 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+  const { data: userPosts, isLoading: isPostsLoading } = useGetUserPosts(id || "");
   const { data: loggedInUser } = useGetCurrentUser();
   const { mutate: followUser } = useFollowUser();
 
@@ -84,7 +85,7 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={currentUser.posts?.length || 0} label="Posts" />
+              <StatBlock value={userPosts?.documents.length || 0} label="Posts" />
               <StatBlock value={currentUser.followers?.length || 0} label="Followers" />
               <StatBlock value={currentUser.following?.length || 0} label="Following" />
             </div>
@@ -159,7 +160,13 @@ const Profile = () => {
       <Routes>
         <Route
           index
-          element={<GridPostList posts={currentUser.posts} showUser={false} />}
+          element={
+            isPostsLoading ? (
+              <Loader />
+            ) : (
+              <GridPostList posts={userPosts?.documents as any} showUser={false} />
+            )
+          }
         />
         {currentUser.$id === user.id && (
           <Route path="/liked-posts" element={<LikedPosts />} />
