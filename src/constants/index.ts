@@ -1,4 +1,4 @@
-import { Home, Compass, Users, Bookmark, Bell, Plus } from "lucide-react";
+import { Home, Compass, Users, Bell, Plus } from "lucide-react";
 
 export const sidebarLinks = [
   {
@@ -15,11 +15,6 @@ export const sidebarLinks = [
     icon: Users,
     route: "/all-users",
     label: "People",
-  },
-  {
-    icon: Bookmark,
-    route: "/saved",
-    label: "Saved",
   },
   {
     icon: Bell,
@@ -43,11 +38,6 @@ export const bottombarLinks = [
     icon: Compass,
     route: "/explore",
     label: "Explore",
-  },
-  {
-    icon: Bookmark,
-    route: "/saved",
-    label: "Saved",
   },
   {
     icon: Bell,

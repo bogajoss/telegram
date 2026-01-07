@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { Search, SlidersHorizontal } from "lucide-react";
 
 import { Input } from "@/components/ui";
 import useDebounce from "@/hooks/useDebounce";
@@ -57,13 +58,8 @@ const Explore = () => {
     <div className="explore-container">
       <div className="explore-inner_container">
         <h2 className="h3-bold md:h2-bold w-full">Search Posts</h2>
-        <div className="flex gap-1 px-4 w-full rounded-lg bg-dark-4">
-          <img
-            src="/assets/icons/search.svg"
-            width={24}
-            height={24}
-            alt="search"
-          />
+        <div className="flex gap-1 px-4 w-full rounded-lg bg-dark-4 items-center">
+          <Search width={24} height={24} className="text-light-4" />
           <Input
             type="text"
             placeholder="Search"
@@ -82,12 +78,7 @@ const Explore = () => {
 
         <div className="flex-center gap-3 bg-dark-3 rounded-xl px-4 py-2 cursor-pointer">
           <p className="small-medium md:base-medium text-light-2">All</p>
-          <img
-            src="/assets/icons/filter.svg"
-            width={20}
-            height={20}
-            alt="filter"
-          />
+          <SlidersHorizontal width={20} height={20} className="text-light-2" />
         </div>
       </div>
 

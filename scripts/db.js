@@ -235,7 +235,6 @@ async function createCollections() {
       name: "Posts",
       attributes: [
         { key: "caption", type: "string", size: 2200, required: false },
-        { key: "location", type: "string", size: 255, required: false },
         {
           key: "tags",
           type: "string",

@@ -13,11 +13,12 @@ import {
   Button,
   Input,
   Textarea,
+  Spinner,
 } from "@/components/ui";
 import { PostValidation } from "@/lib/validation";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
-import { FileUploader, Loader } from "@/components/shared";
+import { FileUploader } from "@/components/shared";
 import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
 import { IPostDocument } from "@/types";
 
@@ -35,7 +36,6 @@ const PostForm = ({ post, action }: PostFormProps) => {
     defaultValues: {
       caption: post ? post?.caption : "",
       file: [],
-      location: post ? post.location : "",
       tags: post ? post.tags.join(",") : "",
     },
   });
@@ -118,19 +118,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="shad-form_label">Add Location</FormLabel>
-              <FormControl>
-                <Input type="text" className="shad-input" {...field} />
-              </FormControl>
-              <FormMessage className="shad-form_message" />
-            </FormItem>
-          )}
-        />
+
 
         <FormField
           control={form.control}
@@ -164,7 +152,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
             type="submit"
             className="shad-button_primary whitespace-nowrap"
             disabled={isLoadingCreate || isLoadingUpdate}>
-            {(isLoadingCreate || isLoadingUpdate) && <Loader />}
+            {(isLoadingCreate || isLoadingUpdate) && <Spinner />}
             {action} Post
           </Button>
         </div>

@@ -1,12 +1,8 @@
+import { Loader2 } from "lucide-react";
+
 const Loader = () => (
   <div className="flex-center w-full">
-    <img
-      src="/assets/icons/loader.svg"
-      alt="loader"
-      width={24}
-      height={24}
-      className="animate-spin"
-    />
+    <Loader2 className="animate-spin text-primary-500 w-6 h-6" />
   </div>
 );
 

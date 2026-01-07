@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 
-import { Button } from "../ui/button";
+import { Button, Spinner } from "@/components/ui";
 import { IUserDocument } from "@/types";
 import { useFollowUser, useGetCurrentUser } from "@/lib/react-query/queries";
 import { VerifiedBadge } from "./index";
@@ -11,7 +12,7 @@ type UserCardProps = {
 
 const UserCard = ({ user }: UserCardProps) => {
   const { data: currentUser } = useGetCurrentUser();
-  const { mutate: followUser } = useFollowUser();
+  const { mutate: followUser, isPending: isFollowPending } = useFollowUser();
 
   const userId = user.$id || (user as any).id;
   const isFollowing = currentUser?.following?.some((u: any) =>
@@ -60,8 +61,19 @@ const UserCard = ({ user }: UserCardProps) => {
         type="button"
         size="sm"
         className="shad-button_primary px-5"
-        onClick={handleFollowUser}>
-        {isFollowing ? "Unfollow" : "Follow"}
+        onClick={handleFollowUser}
+        disabled={isFollowPending}>
+        {isFollowPending ? (
+          <div className="flex-center gap-2">
+            <Spinner /> Loading...
+          </div>
+        ) : isFollowing ? (
+          "Unfollow"
+        ) : (
+          <div className="flex items-center gap-2">
+            <Plus size={18} /> Follow
+          </div>
+        )}
       </Button>
     </Link>
   );

@@ -19,6 +19,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import clsx from "clsx";
+import { Button } from "@/components/ui/button";
 
 interface Notification {
   $id: string;
@@ -38,13 +39,15 @@ const CustomCheckbox = ({
   checked: boolean; 
   onChange: () => void 
 }) => (
-  <button
+  <Button
+    variant="ghost"
+    size="icon"
     onClick={(e) => {
       e.stopPropagation();
       onChange();
     }}
     className={clsx(
-      "flex-shrink-0 transition-all duration-200 rounded-md",
+      "flex-shrink-0 transition-all duration-200 rounded-md hover:bg-transparent p-0 h-auto w-auto",
       checked ? "text-primary-500" : "text-dark-4 hover:text-light-4"
     )}>
     {checked ? (
@@ -52,7 +55,7 @@ const CustomCheckbox = ({
     ) : (
       <Square className="h-6 w-6" />
     )}
-  </button>
+  </Button>
 );
 
 const NotificationItem = ({
@@ -165,25 +168,29 @@ const NotificationItem = ({
 
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         {!notification.read && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation();
               onMarkAsRead(notification.$id);
             }}
-            className="p-1 hover:bg-dark-4 rounded transition-colors text-primary-500"
+            className="h-8 w-8 hover:bg-dark-4 text-primary-500"
             title="Mark as read">
             <Check className="h-4 w-4" />
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(notification.$id);
           }}
-          className="p-1 hover:bg-dark-4 rounded transition-colors text-red"
+          className="h-8 w-8 hover:bg-dark-4 text-red"
           title="Delete">
           <Trash2 className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -253,26 +260,29 @@ const Notifications = () => {
           </div>
 
           <div className="flex-center gap-3 bg-dark-3 rounded-xl px-4 py-2">
-            <button 
+            <Button
+              variant="ghost" 
               onClick={handleSelectAll}
-              className="small-medium md:base-medium text-light-3 hover:text-primary-500 transition-colors mr-2"
+              className="small-medium md:base-medium text-light-3 hover:text-primary-500 hover:bg-transparent transition-colors mr-2 h-auto p-0"
             >
               {selectedNotifications.size === displayedNotifications.length && displayedNotifications.length > 0 ? "Deselect All" : "Select All"}
-            </button>
+            </Button>
             <div className="w-[1px] h-4 bg-dark-4" />
-            <button 
+            <Button 
+              variant="ghost"
               onClick={() => setActiveTab("all")}
-              className={`small-medium md:base-medium ${activeTab === 'all' ? 'text-primary-500' : 'text-light-2'}`}
+              className={`small-medium md:base-medium h-auto p-0 hover:bg-transparent ${activeTab === 'all' ? 'text-primary-500' : 'text-light-2 hover:text-primary-500'}`}
             >
               All
-            </button>
+            </Button>
             <div className="w-[1px] h-4 bg-dark-4" />
-            <button 
+            <Button 
+              variant="ghost"
               onClick={() => setActiveTab("unread")}
-              className={`small-medium md:base-medium ${activeTab === 'unread' ? 'text-primary-500' : 'text-light-2'}`}
+              className={`small-medium md:base-medium h-auto p-0 hover:bg-transparent ${activeTab === 'unread' ? 'text-primary-500' : 'text-light-2 hover:text-primary-500'}`}
             >
               Unread
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -280,18 +290,20 @@ const Notifications = () => {
           <div className="flex items-center gap-4 w-full p-4 bg-dark-3 rounded-xl animate-in fade-in slide-in-from-top-2">
             <p className="small-medium text-light-3">{selectedNotifications.size} selected</p>
             <div className="flex gap-2 ml-auto">
-              <button
+              <Button
+                variant="default"
                 onClick={handleMarkSelectedAsRead}
-                className="shad-button_primary px-5 py-2 text-xs"
+                className="shad-button_primary px-5 py-2 text-xs h-8"
               >
                 Mark Read
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDeleteSelected}
-                className="shad-button_dark_4 px-5 py-2 text-xs !bg-red"
+                className="shad-button_dark_4 px-5 py-2 text-xs !bg-red h-8"
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         )}

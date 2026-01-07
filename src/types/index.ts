@@ -20,7 +20,6 @@ export type INewPost = {
   userId: string;
   caption: string;
   file: File[];
-  location?: string;
   tags?: string;
 };
 
@@ -30,7 +29,6 @@ export type IUpdatePost = {
   imageId: string;
   imageUrl: URL | string;
   file: File[];
-  location?: string;
   tags?: string;
 };
 
@@ -66,7 +64,6 @@ export type IPostDocument = Models.Document & {
   caption: string;
   imageUrl: string;
   imageId: string;
-  location: string;
   tags: string[];
   likes: ILikeDocument[];
   save: ISaveDocument[];

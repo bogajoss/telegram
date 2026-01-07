@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
+import { UploadCloud } from "lucide-react";
 
 import { Button } from "@/components/ui";
 import { convertFileToUrl } from "@/lib/utils";
@@ -42,12 +43,7 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
         </>
       ) : (
         <div className="file_uploader-box ">
-          <img
-            src="/assets/icons/file-upload.svg"
-            width={96}
-            height={77}
-            alt="file upload"
-          />
+          <UploadCloud className="text-light-4" width={96} height={77} />
 
           <h3 className="base-medium text-light-2 mb-2 mt-6">
             Drag photo here

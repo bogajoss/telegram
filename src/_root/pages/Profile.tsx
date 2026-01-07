@@ -6,9 +6,11 @@ import {
   useParams,
   useLocation,
 } from "react-router-dom";
+import { useState } from "react";
+import { Plus, Edit, Grid, Heart, Bookmark } from "lucide-react";
 
-import { Button } from "@/components/ui";
-import { LikedPosts } from "@/_root/pages";
+import { Button, Spinner } from "@/components/ui";
+import { LikedPosts, SavedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import {
   useGetUserById,
@@ -16,15 +18,19 @@ import {
   useGetCurrentUser,
   useGetUserPosts,
 } from "@/lib/react-query/queries";
-import { GridPostList, Loader, VerifiedBadge } from "@/components/shared";
+import { GridPostList, Loader, VerifiedBadge, UserList } from "@/components/shared";
 
 interface StabBlockProps {
   value: string | number;
   label: string;
+  onClick?: () => void;
 }
 
-const StatBlock = ({ value, label }: StabBlockProps) => (
-  <div className="flex-center gap-2">
+const StatBlock = ({ value, label, onClick }: StabBlockProps) => (
+  <div 
+    className={`flex-center gap-2 ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
+    onClick={onClick}
+  >
     <p className="small-semibold lg:body-bold text-primary-500">{value}</p>
     <p className="small-medium lg:base-medium text-light-2">{label}</p>
   </div>
@@ -34,13 +40,15 @@ const Profile = () => {
   const { id } = useParams();
   const { user } = useUserContext();
   const { pathname } = useLocation();
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   const { data: currentUser } = useGetUserById(id || "");
   const { data: userPosts, isLoading: isPostsLoading } = useGetUserPosts(
     id || ""
   );
   const { data: loggedInUser } = useGetCurrentUser();
-  const { mutate: followUser } = useFollowUser();
+  const { mutate: followUser, isPending: isFollowPending } = useFollowUser();
 
   if (!currentUser)
     return (
@@ -114,12 +122,30 @@ const Profile = () => {
               <StatBlock
                 value={currentUser?.followers?.length ?? 0}
                 label="Followers"
+                onClick={() => setShowFollowers(true)}
               />
               <StatBlock
                 value={currentUser?.following?.length ?? 0}
                 label="Following"
+                onClick={() => setShowFollowing(true)}
               />
             </div>
+
+            {showFollowers && (
+              <UserList
+                title="Followers"
+                userIds={currentUser?.followers as string[]}
+                onClose={() => setShowFollowers(false)}
+              />
+            )}
+
+            {showFollowing && (
+              <UserList
+                title="Following"
+                userIds={currentUser?.following as string[]}
+                onClose={() => setShowFollowing(false)}
+              />
+            )}
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm line-clamp-3">
               {currentUser?.bio || ""}
@@ -133,12 +159,7 @@ const Profile = () => {
                 className={`h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg ${
                   user.id !== currentUser.$id && "hidden"
                 }`}>
-                <img
-                  src={"/assets/icons/edit.svg"}
-                  alt="edit"
-                  width={20}
-                  height={20}
-                />
+                <Edit width={20} height={20} />
                 <p className="flex whitespace-nowrap small-medium">
                   Edit Profile
                 </p>
@@ -148,8 +169,19 @@ const Profile = () => {
               <Button
                 type="button"
                 className="shad-button_primary px-8"
-                onClick={handleFollowUser}>
-                {isFollowing ? "Unfollow" : "Follow"}
+                onClick={handleFollowUser}
+                disabled={isFollowPending}>
+                {isFollowPending ? (
+                  <div className="flex-center gap-2">
+                    <Spinner /> Loading...
+                  </div>
+                ) : isFollowing ? (
+                  "Unfollow"
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Plus size={20} /> Follow
+                  </div>
+                )}
               </Button>
             </div>
           </div>
@@ -163,12 +195,7 @@ const Profile = () => {
             className={`profile-tab rounded-l-lg ${
               pathname === `/profile/${id}` && "!bg-dark-3"
             }`}>
-            <img
-              src={"/assets/icons/posts.svg"}
-              alt="posts"
-              width={20}
-              height={20}
-            />
+            <Grid width={20} height={20} />
             Posts
           </Link>
           <Link
@@ -176,25 +203,15 @@ const Profile = () => {
             className={`profile-tab rounded-r-lg ${
               pathname === `/profile/${id}/liked-posts` && "!bg-dark-3"
             }`}>
-            <img
-              src={"/assets/icons/like.svg"}
-              alt="like"
-              width={20}
-              height={20}
-            />
+            <Heart width={20} height={20} />
             Liked Posts
           </Link>
           <Link
-            to={`/saved`}
+            to={`/profile/${id}/saved-posts`}
             className={`profile-tab rounded-r-lg ${
-              pathname === `/saved` && "!bg-dark-3"
+              pathname === `/profile/${id}/saved-posts` && "!bg-dark-3"
             }`}>
-            <img
-              src={"/assets/icons/save.svg"}
-              alt="save"
-              width={20}
-              height={20}
-            />
+            <Bookmark width={20} height={20} />
             Saved Posts
           </Link>
         </div>
@@ -216,6 +233,9 @@ const Profile = () => {
         />
         {currentUser.$id === user.id && (
           <Route path="/liked-posts" element={<LikedPosts />} />
+        )}
+        {currentUser.$id === user.id && (
+          <Route path="/saved-posts" element={<SavedPosts />} />
         )}
       </Routes>
       <Outlet />

@@ -2,6 +2,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
+import { Edit } from "lucide-react";
 
 import {
   Form,
@@ -12,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
-import { Textarea, Input, Button } from "@/components/ui";
+import { Textarea, Input, Button, Spinner } from "@/components/ui";
 import { ProfileUploader, Loader } from "@/components/shared";
 
 import { ProfileValidation } from "@/lib/validation";
@@ -78,11 +79,9 @@ const UpdateProfile = () => {
     <div className="flex flex-1">
       <div className="common-container">
         <div className="flex-start gap-3 justify-start w-full max-w-5xl">
-          <img
-            src="/assets/icons/edit.svg"
+          <Edit
             width={36}
             height={36}
-            alt="edit"
             className="invert-white"
           />
           <h2 className="h3-bold md:h2-bold text-left w-full">Edit Profile</h2>
@@ -188,7 +187,7 @@ const UpdateProfile = () => {
                 type="submit"
                 className="shad-button_primary whitespace-nowrap"
                 disabled={isLoadingUpdate}>
-                {isLoadingUpdate && <Loader />}
+                {isLoadingUpdate && <Spinner />}
                 Update Profile
               </Button>
             </div>

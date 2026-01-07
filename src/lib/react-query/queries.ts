@@ -22,6 +22,7 @@ import {
   likePost,
   deleteLikedPost,
   getUserById,
+  getUsersByIds,
   updateUser,
   getRecentPosts,
   getInfinitePosts,
@@ -302,6 +303,14 @@ export const useGetUserById = (userId: string) => {
     queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
     queryFn: () => getUserById(userId),
     enabled: !!userId && userId !== "undefined",
+  });
+};
+
+export const useGetUsersByIds = (userIds: string[]) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USERS, userIds],
+    queryFn: () => getUsersByIds(userIds),
+    enabled: !!userIds && userIds.length > 0,
   });
 };
 

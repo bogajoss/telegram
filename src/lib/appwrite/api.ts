@@ -245,7 +245,6 @@ export async function createPost(post: INewPost) {
         caption: post.caption,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
-        location: post.location,
         tags: tags,
       }
     );
@@ -428,7 +427,6 @@ export async function updatePost(post: IUpdatePost) {
         caption: post.caption,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
-        location: post.location,
         tags: tags,
       }
     );
@@ -931,6 +929,32 @@ export async function getUserById(userId: string) {
       ...user,
       following: (user as any).followingUsers || user.following || [],
     } as unknown as IUserDocument;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET USERS BY IDS
+export async function getUsersByIds(userIds: string[]) {
+  try {
+    if (!userIds || userIds.length === 0) return { documents: [], total: 0 };
+
+    // Appwrite limit for Query.equal with array is 100 usually, but let's just use it
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.equal("$id", userIds)]
+    );
+
+    if (!users) throw Error;
+
+    return {
+      ...users,
+      documents: users.documents.map((user) => ({
+        ...user,
+        following: (user as any).followingUsers || user.following || [],
+      })),
+    } as unknown as Models.DocumentList<IUserDocument>;
   } catch (error) {
     console.log(error);
   }

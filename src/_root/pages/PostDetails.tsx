@@ -1,7 +1,8 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Spinner } from "@/components/ui";
 import { Loader, VerifiedBadge } from "@/components/shared";
 import { GridPostList, PostStats } from "@/components/shared";
 
@@ -53,12 +54,9 @@ const CommentItem = ({
             )}
           </p>
           {userId === creator.$id && (
-            <img
-              src="/assets/icons/delete.svg"
-              alt="delete"
-              width={16}
-              height={16}
-              className="cursor-pointer"
+            <Trash2
+              size={16}
+              className="cursor-pointer text-light-3 hover:text-red"
               onClick={() => onDelete(comment.$id)}
             />
           )}
@@ -134,12 +132,7 @@ const PostDetails = () => {
           onClick={() => navigate(-1)}
           variant="ghost"
           className="shad-button_ghost">
-          <img
-            src={"/assets/icons/back.svg"}
-            alt="back"
-            width={24}
-            height={24}
-          />
+          <ArrowLeft width={24} height={24} />
           <p className="small-medium lg:base-medium">Back</p>
         </Button>
       </div>
@@ -176,10 +169,6 @@ const PostDetails = () => {
                     <p className="subtle-semibold lg:small-regular ">
                       {multiFormatDateString(post?.$createdAt)}
                     </p>
-                    •
-                    <p className="subtle-semibold lg:small-regular">
-                      {post?.location}
-                    </p>
                   </div>
                 </div>
               </Link>
@@ -191,12 +180,7 @@ const PostDetails = () => {
                 <Link
                   to={`/update-post/${post?.$id}`}
                   className={`${user.id !== creatorId && "hidden"}`}>
-                  <img
-                    src={"/assets/icons/edit.svg"}
-                    alt="edit"
-                    width={24}
-                    height={24}
-                  />
+                  <Edit width={24} height={24} />
                 </Link>
 
                 <Button
@@ -205,12 +189,7 @@ const PostDetails = () => {
                   className={`ost_details-delete_btn ${
                     user.id !== creatorId && "hidden"
                   }`}>
-                  <img
-                    src={"/assets/icons/delete.svg"}
-                    alt="delete"
-                    width={24}
-                    height={24}
-                  />
+                  <Trash2 width={24} height={24} />
                 </Button>
               </div>
             </div>
@@ -251,7 +230,13 @@ const PostDetails = () => {
                   type="submit"
                   className="shad-button_primary"
                   disabled={isCreatingComment}>
-                  {isCreatingComment ? "..." : "Post"}
+                  {isCreatingComment ? (
+                    <div className="flex-center gap-2">
+                      <Spinner />
+                    </div>
+                  ) : (
+                    "Post"
+                  )}
                 </Button>
               </form>
 

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/shared/Loader";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
 
 import { SigninValidation } from "@/lib/validation";
@@ -98,10 +98,10 @@ const SigninForm = () => {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary">
+          <Button type="submit" className="shad-button_primary" disabled={isPending || isUserLoading}>
             {isPending || isUserLoading ? (
               <div className="flex-center gap-2">
-                <Loader /> Loading...
+                <Spinner /> Loading...
               </div>
             ) : (
               "Log in"

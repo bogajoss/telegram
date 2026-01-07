@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { Heart, Bookmark } from "lucide-react";
 
 import {
   useLikePost,
@@ -47,7 +48,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   }, [userId, savedPostRecord]);
 
   const handleLikePost = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
+    e: React.MouseEvent<SVGElement, MouseEvent>
   ) => {
     e.stopPropagation();
 
@@ -83,7 +84,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   };
 
   const handleSavePost = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
+    e: React.MouseEvent<SVGElement, MouseEvent>
   ) => {
     e.stopPropagation();
 
@@ -124,15 +125,12 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     <div
       className={`flex justify-between items-center z-20 ${containerStyles}`}>
       <div className="flex gap-2 mr-5">
-        <img
-          src={`${
-            isLiked ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"
-          }`}
-          alt="like"
-          width={20}
-          height={20}
+        <Heart
+          size={20}
           onClick={(e) => handleLikePost(e)}
-          className={`cursor-pointer transition-opacity ${isLikingInProgress ? "opacity-50 pointer-events-none" : ""}`}
+          className={`cursor-pointer transition-opacity ${
+            isLikingInProgress ? "opacity-50 pointer-events-none" : ""
+          } ${isLiked ? "fill-red text-red" : "text-primary-500"}`}
         />
         <p className="small-medium lg:base-medium">
           {post?.likes?.length ?? 0}
@@ -140,13 +138,12 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       </div>
 
       <div className="flex gap-2">
-        <img
-          src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-          alt="share"
-          width={20}
-          height={20}
-          className={`cursor-pointer transition-opacity ${isSavingInProgress ? "opacity-50 pointer-events-none" : ""}`}
+        <Bookmark
+          size={20}
           onClick={(e) => handleSavePost(e)}
+          className={`cursor-pointer transition-opacity ${
+            isSavingInProgress ? "opacity-50 pointer-events-none" : ""
+          } ${isSaved ? "fill-primary-500 text-primary-500" : "text-primary-500"}`}
         />
       </div>
     </div>

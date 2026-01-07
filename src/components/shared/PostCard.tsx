@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Edit } from "lucide-react";
 
 import { PostStats, VerifiedBadge } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
@@ -49,10 +50,6 @@ const PostCard = ({ post }: PostCardProps) => {
               <p className="subtle-semibold lg:small-regular ">
                 {multiFormatDateString(post.$createdAt)}
               </p>
-              •
-              <p className="subtle-semibold lg:small-regular">
-                {post.location}
-              </p>
             </div>
           </div>
         </div>
@@ -60,12 +57,7 @@ const PostCard = ({ post }: PostCardProps) => {
         <Link
           to={`/update-post/${post.$id}`}
           className={`${user.id !== creatorId && "hidden"}`}>
-          <img
-            src={"/assets/icons/edit.svg"}
-            alt="edit"
-            width={20}
-            height={20}
-          />
+          <Edit width={20} height={20} />
         </Link>
       </div>
 

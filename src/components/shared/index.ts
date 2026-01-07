@@ -5,6 +5,8 @@ export { default as PostCard } from "./PostCard";
 export { default as GridPostList } from "./GridPostList";
 export { default as Topbar } from "./Topbar";
 export { default as UserCard } from "./UserCard";
+export { default as UserListItem } from "./UserListItem";
+export { default as UserList } from "./UserList";
 export { default as FileUploader } from "./FileUploader";
 export { default as ProfileUploader } from "./ProfileUploader";
 export { default as PostStats } from "./PostStats";

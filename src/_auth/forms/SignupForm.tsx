@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/shared/Loader";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
 
 import { useCreateUserAccount } from "@/lib/react-query/queries";
@@ -135,10 +135,10 @@ const SignupForm = () => {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary">
+          <Button type="submit" className="shad-button_primary" disabled={isCreatingAccount || isUserLoading}>
             {isCreatingAccount || isUserLoading ? (
               <div className="flex-center gap-2">
-                <Loader /> Loading...
+                <Spinner /> Loading...
               </div>
             ) : (
               "Sign Up"

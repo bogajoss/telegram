@@ -11,6 +11,7 @@ import {
 } from "@/lib/react-query/queries";
 import { Bell, Check, Trash2, Heart, MessageCircle, Users } from "lucide-react";
 import clsx from "clsx";
+import { Button } from "@/components/ui/button";
 
 interface Notification {
   $id: string;
@@ -117,23 +118,27 @@ const NotificationItem = ({
 
       <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {!notification.read && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation();
               onMarkAsRead(notification.$id);
             }}
-            className="p-1 hover:bg-dark-4 rounded-full text-primary-500">
+            className="h-6 w-6 p-1 hover:bg-dark-4 text-primary-500">
             <Check className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(notification.$id);
           }}
-          className="p-1 hover:bg-dark-4 rounded-full text-red-500">
+          className="h-6 w-6 p-1 hover:bg-dark-4 text-red-500">
           <Trash2 className="h-3.5 w-3.5" />
-        </button>
+        </Button>
       </div>
 
       {!notification.read && (
@@ -179,9 +184,11 @@ export const NotificationBell = () => {
   return (
     <div ref={bellRef} className="relative">
       {/* Bell Icon */}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 hover:bg-dark-3 rounded-lg transition-colors"
+        className="relative hover:bg-dark-3 transition-colors"
         aria-label="Notifications">
         <Bell className="h-6 w-6 text-light-1" />
 
@@ -191,7 +198,7 @@ export const NotificationBell = () => {
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </button>
+      </Button>
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -209,12 +216,14 @@ export const NotificationBell = () => {
               ) : null}
             </div>
             {unreadCount && unreadCount > 0 && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleMarkAllAsRead}
-                className="text-light-3 text-xs hover:text-white transition-colors flex items-center gap-1 bg-dark-3 px-2 py-1 rounded-md">
+                className="text-light-3 text-xs hover:text-white transition-colors flex items-center gap-1 bg-dark-3 px-2 py-1 h-auto">
                 <Check className="h-3 w-3" />
                 Mark all read
-              </button>
+              </Button>
             )}
           </div>
 
@@ -247,11 +256,12 @@ export const NotificationBell = () => {
 
           {/* Footer */}
           <div className="p-3 border-t border-dark-4 bg-dark-3/30">
-            <button
+            <Button
+              variant="secondary"
               onClick={handleViewAll}
-              className="w-full py-2 rounded-xl bg-dark-4 hover:bg-dark-3 text-light-1 text-sm font-semibold transition-colors">
+              className="w-full bg-dark-4 hover:bg-dark-3 text-light-1 text-sm font-semibold transition-colors border-none">
               View all notifications
-            </button>
+            </Button>
           </div>
         </div>
       )}
