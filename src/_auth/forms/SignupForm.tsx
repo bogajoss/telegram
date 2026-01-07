@@ -3,7 +3,14 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
@@ -29,7 +36,8 @@ const SignupForm = () => {
   });
 
   // Queries
-  const { mutateAsync: createUserAccount, isPending: isCreatingAccount } = useCreateUserAccount();
+  const { mutateAsync: createUserAccount, isPending: isCreatingAccount } =
+    useCreateUserAccount();
 
   // Handler
   const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
@@ -37,8 +45,8 @@ const SignupForm = () => {
       const newUser = await createUserAccount(user);
 
       if (!newUser) {
-        toast({ title: "Sign up failed. Please try again.", });
-        
+        toast({ title: "Sign up failed. Please try again." });
+
         return;
       }
 
@@ -49,8 +57,8 @@ const SignupForm = () => {
 
         navigate("/");
       } else {
-        toast({ title: "Login failed. Please try again.", });
-        
+        toast({ title: "Login failed. Please try again." });
+
         return;
       }
     } catch (error) {

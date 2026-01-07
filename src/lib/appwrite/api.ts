@@ -1,7 +1,18 @@
 import { ID, Query, ImageGravity, Models } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument, ISaveDocument, ILikeDocument, INewComment, ICommentDocument } from "@/types";
+import {
+  IUpdatePost,
+  INewPost,
+  INewUser,
+  IUpdateUser,
+  IPostDocument,
+  IUserDocument,
+  ISaveDocument,
+  ILikeDocument,
+  INewComment,
+  ICommentDocument,
+} from "@/types";
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -16,7 +27,7 @@ async function enrichPostsWithLikes(posts: any[]) {
     if (!posts || posts.length === 0) return posts;
 
     // Filter out posts without $id
-    const validPosts = posts.filter(p => p && p.$id);
+    const validPosts = posts.filter((p) => p && p.$id);
     if (validPosts.length === 0) return posts;
 
     try {
@@ -28,16 +39,22 @@ async function enrichPostsWithLikes(posts: any[]) {
       );
 
       // Attach likes to each post, filtering by valid post IDs
-      return posts.map(post => ({
+      return posts.map((post) => ({
         ...post,
-        likes: post?.$id ? (likes.documents?.filter(like => like?.post === post.$id) ?? []) as any : []
+        likes: post?.$id
+          ? ((likes.documents?.filter((like) => like?.post === post.$id) ??
+              []) as any)
+          : [],
       })) as IPostDocument[];
     } catch (likesError) {
-      console.error("Error fetching likes, returning posts without likes:", likesError);
+      console.error(
+        "Error fetching likes, returning posts without likes:",
+        likesError
+      );
       // If likes fetch fails, return posts with empty likes array
-      return posts.map(post => ({
+      return posts.map((post) => ({
         ...post,
-        likes: []
+        likes: [],
       })) as IPostDocument[];
     }
   } catch (error) {
@@ -119,7 +136,10 @@ export async function saveUserToDB(user: {
 // ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailPasswordSession(user.email, user.password);
+    const session = await account.createEmailPasswordSession(
+      user.email,
+      user.password
+    );
 
     return session;
   } catch (error) {
@@ -155,7 +175,7 @@ export async function getCurrentUser() {
     if (!currentUser) throw Error;
 
     const userDoc = currentUser.documents[0];
-    
+
     // Fetch the full user document to ensure relationships are populated
     const fullUser = await databases.getDocument(
       appwriteConfig.databaseId,
@@ -248,7 +268,11 @@ export async function uploadFile(file: File) {
 }
 
 // ============================== GET FILE URL
-export function getFilePreview(fileId: string, width: number = 1200, height: number = 1200) {
+export function getFilePreview(
+  fileId: string,
+  width: number = 1200,
+  height: number = 1200
+) {
   try {
     const fileUrl = storage.getFilePreview(
       appwriteConfig.storageId,
@@ -290,18 +314,24 @@ export async function searchPosts(searchTerm: string) {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+    const enrichedPosts = await enrichPostsWithLikes(
+      postsResult.documents as unknown as any[]
+    );
 
     return {
       ...postsResult,
-      documents: enrichedPosts
+      documents: enrichedPosts,
     } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
   }
 }
 
-export async function getInfinitePosts({ pageParam }: { pageParam: number | string | null }) {
+export async function getInfinitePosts({
+  pageParam,
+}: {
+  pageParam: number | string | null;
+}) {
   const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
 
   if (pageParam) {
@@ -318,11 +348,13 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number | stri
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+    const enrichedPosts = await enrichPostsWithLikes(
+      postsResult.documents as unknown as any[]
+    );
 
     return {
       ...postsResult,
-      documents: enrichedPosts
+      documents: enrichedPosts,
     } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
@@ -445,10 +477,7 @@ export async function likePost(userId: string, postId: string) {
     const existingLikes = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.likesCollectionId,
-      [
-        Query.equal("user", userId),
-        Query.equal("post", postId)
-      ]
+      [Query.equal("user", userId), Query.equal("post", postId)]
     );
 
     // If like already exists, return it instead of creating a duplicate
@@ -468,6 +497,49 @@ export async function likePost(userId: string, postId: string) {
     );
 
     if (!newLike) throw Error("Failed to create like");
+
+    console.log("👍 Like created successfully, preparing notification...");
+
+    // Get the post to find the creator
+    try {
+      const post = await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.postCollectionId,
+        postId
+      );
+
+      console.log("📋 Post retrieved:", {
+        postId,
+        creator: post.creator,
+        creatorType: typeof post.creator,
+      });
+
+      const postCreatorId =
+        typeof post.creator === "string" ? post.creator : post.creator?.$id;
+
+      console.log("👤 Post creator ID:", postCreatorId);
+      console.log("🔍 Checking: postCreatorId !== userId?", postCreatorId, "!==", userId, "=>", postCreatorId !== userId);
+
+      // Create notification for the post owner (if not liking own post)
+      if (postCreatorId && postCreatorId !== userId) {
+        console.log("✉️ Attempting to create notification...");
+        await createNotification(
+          postCreatorId,
+          "like",
+          userId,
+          postId,
+          undefined,
+          "liked your post"
+        );
+      } else {
+        console.log("⏭️  Skipping notification (self-like)");
+      }
+    } catch (notificationError) {
+      console.log(
+        "⚠️  Notification creation failed, but like was successful:",
+        notificationError
+      );
+    }
 
     return newLike as unknown as ILikeDocument;
   } catch (error) {
@@ -503,10 +575,7 @@ export async function savePost(userId: string, postId: string) {
     const existingSaves = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.savesCollectionId,
-      [
-        Query.equal("user", userId),
-        Query.equal("post", postId)
-      ]
+      [Query.equal("user", userId), Query.equal("post", postId)]
     );
 
     // If already saved, return existing record
@@ -583,7 +652,9 @@ export async function getUserLikedPosts(userId: string) {
     );
 
     // Filter out any null posts
-    const validPosts = posts.filter((post): post is IPostDocument => post !== null);
+    const validPosts = posts.filter(
+      (post): post is IPostDocument => post !== null
+    );
 
     // Enrich posts with likes data
     const enrichedPosts = await enrichPostsWithLikes(validPosts);
@@ -611,11 +682,41 @@ export async function createComment(comment: INewComment) {
       }
     );
 
-    if (!newComment) throw Error;
+    if (!newComment) throw Error("Failed to create comment");
+
+    // Get the post to find the creator
+    try {
+      const post = await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.postCollectionId,
+        comment.postId
+      );
+
+      const postCreatorId =
+        typeof post.creator === "string" ? post.creator : post.creator?.$id;
+
+      // Create notification for the post owner (if not commenting on own post)
+      if (postCreatorId && postCreatorId !== comment.userId) {
+        await createNotification(
+          postCreatorId,
+          "comment",
+          comment.userId,
+          comment.postId,
+          newComment.$id,
+          "commented on your post"
+        );
+      }
+    } catch (notificationError) {
+      console.log(
+        "Notification creation failed, but comment was successful:",
+        notificationError
+      );
+    }
 
     return newComment as unknown as ICommentDocument;
   } catch (error) {
-    console.log(error);
+    console.error("Error creating comment:", error);
+    throw error;
   }
 }
 
@@ -667,11 +768,13 @@ export async function getUserPosts(userId?: string) {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+    const enrichedPosts = await enrichPostsWithLikes(
+      postsResult.documents as unknown as any[]
+    );
 
     return {
       ...postsResult,
-      documents: enrichedPosts
+      documents: enrichedPosts,
     } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
@@ -690,11 +793,13 @@ export async function getRecentPosts() {
     if (!postsResult) throw Error;
 
     // Enrich posts with likes data
-    const enrichedPosts = await enrichPostsWithLikes(postsResult.documents as unknown as any[]);
+    const enrichedPosts = await enrichPostsWithLikes(
+      postsResult.documents as unknown as any[]
+    );
 
     return {
       ...postsResult,
-      documents: enrichedPosts
+      documents: enrichedPosts,
     } as unknown as Models.DocumentList<IPostDocument>;
   } catch (error) {
     console.log(error);
@@ -755,7 +860,11 @@ export async function getUserById(userId: string) {
 }
 
 // ============================== FOLLOW / UNFOLLOW USER
-export async function followUser(userId: string, followerId: string, followingArray: string[]) {
+export async function followUser(
+  userId: string,
+  followerId: string,
+  followingArray: string[]
+) {
   try {
     // 1. Update the follower's "following" list
     const updatedFollower = await databases.updateDocument(
@@ -778,9 +887,10 @@ export async function followUser(userId: string, followerId: string, followingAr
 
     if (!targetUser) throw Error;
 
-    let followersArray = (targetUser.followers as any[])?.map((u: any) => 
-      typeof u === "string" ? u : u.$id || u.id
-    ) || [];
+    let followersArray =
+      (targetUser.followers as any[])?.map((u: any) =>
+        typeof u === "string" ? u : u.$id || u.id
+      ) || [];
 
     const isNowFollowing = followingArray.includes(userId);
 
@@ -801,9 +911,28 @@ export async function followUser(userId: string, followerId: string, followingAr
       }
     );
 
+    // 3. Create notification for the target user (if it's a follow action)
+    if (isNowFollowing && userId !== followerId) {
+      try {
+        await createNotification(
+          userId,
+          "follow",
+          followerId,
+          undefined,
+          undefined,
+          "started following you"
+        );
+      } catch (notifError) {
+        console.error("Failed to create follow notification:", notifError);
+      }
+    }
+
     return {
       ...updatedFollower,
-      following: (updatedFollower as any).followingUsers || updatedFollower.following || [],
+      following:
+        (updatedFollower as any).followingUsers ||
+        updatedFollower.following ||
+        [],
     } as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
@@ -865,5 +994,172 @@ export async function updateUser(user: IUpdateUser) {
     return updatedUser as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
+  }
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+// Create notification
+export async function createNotification(
+  userId: string,
+  type: "like" | "comment" | "follow",
+  actorId: string,
+  postId?: string,
+  commentId?: string,
+  message?: string
+) {
+  try {
+    console.log("🔔 Creating notification:", {
+      userId,
+      type,
+      actorId,
+      postId,
+      commentId,
+      message,
+      collectionId: appwriteConfig.notificationsCollectionId,
+      databaseId: appwriteConfig.databaseId,
+    });
+
+    if (!userId || !type || !actorId)
+      throw Error("Missing required notification fields");
+
+    const notification = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      ID.unique(),
+      {
+        userId: userId, // Backwards compatibility
+        recipient: userId, // Who receives the notification
+        type, // like, comment, follow
+        actorId: actorId, // Backwards compatibility
+        actor: actorId, // Who performed the action
+        postId: postId || null,
+        commentId: commentId || null,
+        message:
+          message ||
+          (type === "follow" ? "started following you" : `${type}d your post`),
+        read: false,
+      }
+    );
+
+    console.log("✅ Notification created successfully:", notification.$id);
+    return notification;
+  } catch (error) {
+    console.error("❌ Error creating notification:", error);
+    // Don't throw - notifications shouldn't break the app
+    return null;
+  }
+}
+
+// Get user notifications
+export async function getUserNotifications(userId: string, limit: number = 20) {
+  try {
+    if (!userId) throw Error("userId is required");
+
+    const notifications = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      [
+        Query.equal("recipient", userId),
+        Query.orderDesc("$createdAt"),
+        Query.limit(limit),
+      ]
+    );
+
+    return notifications;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return { documents: [], total: 0 };
+  }
+}
+
+// Get unread notification count
+export async function getUnreadNotificationCount(userId: string) {
+  try {
+    if (!userId) throw Error("userId is required");
+
+    const notifications = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      [Query.equal("recipient", userId), Query.equal("read", false)]
+    );
+
+    return notifications.total;
+  } catch (error) {
+    console.error("Error fetching unread count:", error);
+    return 0;
+  }
+}
+
+// Mark notification as read
+export async function markNotificationAsRead(notificationId: string) {
+  try {
+    if (!notificationId) throw Error("notificationId is required");
+
+    const updated = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      notificationId,
+      { read: true }
+    );
+
+    return updated;
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    throw error;
+  }
+}
+
+// Mark all notifications as read
+export async function markAllNotificationsAsRead(userId: string) {
+  try {
+    if (!userId) throw Error("userId is required");
+
+    const notifications = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      [
+        Query.equal("recipient", userId),
+        Query.equal("read", false),
+        Query.limit(1000),
+      ]
+    );
+
+    // Update all unread notifications
+    await Promise.all(
+      notifications.documents.map((notification: any) =>
+        databases.updateDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.notificationsCollectionId,
+          notification.$id,
+          { read: true }
+        )
+      )
+    );
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.error("Error marking all as read:", error);
+    return { status: "error" };
+  }
+}
+
+// Delete notification
+export async function deleteNotification(notificationId: string) {
+  try {
+    if (!notificationId) throw Error("notificationId is required");
+
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      notificationId
+    );
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    throw error;
   }
 }

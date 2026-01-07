@@ -59,7 +59,9 @@ const Home = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-light-3 text-center">No posts yet. Check back soon!</p>
+            <p className="text-light-3 text-center">
+              No posts yet. Check back soon!
+            </p>
           )}
         </div>
       </div>

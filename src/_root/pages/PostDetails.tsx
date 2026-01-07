@@ -17,10 +17,21 @@ import {
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 
-const CommentItem = ({ comment, userId, onDelete }: { comment: any, userId: string, onDelete: (id: string) => void }) => {
-  const { data: fetchedCreator } = useGetUserById(typeof comment.creator === "string" ? comment.creator : "");
-  
-  const creator = typeof comment.creator === "string" ? fetchedCreator : comment.creator;
+const CommentItem = ({
+  comment,
+  userId,
+  onDelete,
+}: {
+  comment: any;
+  userId: string;
+  onDelete: (id: string) => void;
+}) => {
+  const { data: fetchedCreator } = useGetUserById(
+    typeof comment.creator === "string" ? comment.creator : ""
+  );
+
+  const creator =
+    typeof comment.creator === "string" ? fetchedCreator : comment.creator;
 
   if (!creator) return null;
 
@@ -37,7 +48,9 @@ const CommentItem = ({ comment, userId, onDelete }: { comment: any, userId: stri
         <div className="flex justify-between items-center">
           <p className="small-semibold text-light-1 flex items-center gap-1">
             {creator.name}
-            {(creator as any)?.is_verified && <VerifiedBadge className="w-3 h-3" />}
+            {(creator as any)?.is_verified && (
+              <VerifiedBadge className="w-3 h-3" />
+            )}
           </p>
           {userId === creator.$id && (
             <img
@@ -66,23 +79,27 @@ const PostDetails = () => {
   const [comment, setComment] = useState("");
 
   const { data: post, isLoading } = useGetPostById(id);
-  const { data: comments, isLoading: isCommentsLoading } = useGetPostComments(id || "");
-  const { mutate: createComment, isPending: isCreatingComment } = useCreateComment();
+  const { data: comments, isLoading: isCommentsLoading } = useGetPostComments(
+    id || ""
+  );
+  const { mutate: createComment, isPending: isCreatingComment } =
+    useCreateComment();
   const { mutate: deleteComment } = useDeleteComment();
 
-  const creatorId = typeof post?.creator === "string"
-    ? post.creator
-    : post?.creator?.$id || (post?.creator as any)?.id;
+  const creatorId =
+    typeof post?.creator === "string"
+      ? post.creator
+      : post?.creator?.$id || (post?.creator as any)?.id;
 
   const { data: fetchedCreator } = useGetUserById(
     typeof post?.creator === "string" ? post.creator : ""
   );
 
-  const creator = typeof post?.creator === "string" ? fetchedCreator : post?.creator;
+  const creator =
+    typeof post?.creator === "string" ? fetchedCreator : post?.creator;
 
-  const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
-    creatorId
-  );
+  const { data: userPosts, isLoading: isUserPostLoading } =
+    useGetUserPosts(creatorId);
   const { mutate: deletePost } = useDeletePost();
 
   const relatedPosts = userPosts?.documents?.filter(
@@ -221,7 +238,7 @@ const PostDetails = () => {
             <div className="flex flex-col gap-4 w-full mt-4">
               <hr className="border w-full border-dark-4/80" />
               <h4 className="body-bold text-light-1">Comments</h4>
-              
+
               <form onSubmit={handleAddComment} className="flex gap-2">
                 <Input
                   type="text"
@@ -230,7 +247,10 @@ const PostDetails = () => {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
-                <Button type="submit" className="shad-button_primary" disabled={isCreatingComment}>
+                <Button
+                  type="submit"
+                  className="shad-button_primary"
+                  disabled={isCreatingComment}>
                   {isCreatingComment ? "..." : "Post"}
                 </Button>
               </form>
@@ -242,11 +262,11 @@ const PostDetails = () => {
                   <p className="text-light-4 small-medium">No comments yet.</p>
                 ) : (
                   comments?.documents.map((c: any) => (
-                    <CommentItem 
-                      key={c.$id} 
-                      comment={c} 
-                      userId={user.id} 
-                      onDelete={handleDeleteComment} 
+                    <CommentItem
+                      key={c.$id}
+                      comment={c}
+                      userId={user.id}
+                      onDelete={handleDeleteComment}
                     />
                   ))
                 )}

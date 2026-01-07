@@ -32,7 +32,7 @@
 
 ## 🚨 Tutorial
 
-This repository contains the code corresponding to an in-depth tutorial available on our YouTube channel, <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a>. 
+This repository contains the code corresponding to an in-depth tutorial available on our YouTube channel, <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a>.
 
 If you prefer visual learning, this is the perfect resource for you. Follow our tutorial to learn how to build projects like these step-by-step in a beginner-friendly manner!
 
@@ -79,7 +79,7 @@ If you're getting started and need assistance or face any bugs, join our active 
 
 👉 **Backend as a Service (BaaS) - Appwrite**: Utilize Appwrite as a Backend as a Service solution for streamlined backend development, offering features like authentication, database, file storage, and more
 
-and many more, including code architecture and reusability 
+and many more, including code architecture and reusability
 
 ## <a name="quick-start">🤸 Quick Start</a>
 
@@ -480,7 +480,6 @@ export const bottombarLinks = [
 
 </details>
 
-
 <details>
 <summary><code>queryKeys.ts</code></summary>
 
@@ -514,70 +513,67 @@ export enum QUERY_KEYS {
 
 ```javascript
 /** @type {import('tailwindcss').Config} */
-const defaultTheme = require('tailwindcss/defaultTheme')
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  darkMode: ['class'],
+  darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   theme: {
     container: {
       center: true,
-      padding: '2rem',
+      padding: "2rem",
       screens: {
-        '2xl': '1400px',
-      
+        "2xl": "1400px",
       },
     },
     extend: {
       colors: {
-        'primary-500': '#877EFF',
-        'primary-600': '#5D5FEF',
-        'secondary-500': '#FFB620',
-        'off-white': '#D0DFFF',
-        'red': '#FF5A5A',
-        'dark-1': '#000000',
-        'dark-2': '#09090A',
-        'dark-3': '#101012',
-        'dark-4': '#1F1F22',
-        'light-1': '#FFFFFF',
-        'light-2': '#EFEFEF',
-        'light-3': '#7878A3',
-        'light-4': '#5C5C7B',
+        "primary-500": "#877EFF",
+        "primary-600": "#5D5FEF",
+        "secondary-500": "#FFB620",
+        "off-white": "#D0DFFF",
+        red: "#FF5A5A",
+        "dark-1": "#000000",
+        "dark-2": "#09090A",
+        "dark-3": "#101012",
+        "dark-4": "#1F1F22",
+        "light-1": "#FFFFFF",
+        "light-2": "#EFEFEF",
+        "light-3": "#7878A3",
+        "light-4": "#5C5C7B",
       },
       screens: {
-        'xs': '480px',
-      
+        xs: "480px",
       },
       width: {
-        '420': '420px',
-        '465': '465px',
+        420: "420px",
+        465: "465px",
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-
+        inter: ["Inter", "sans-serif"],
       },
       keyframes: {
-        'accordion-down': {
+        "accordion-down": {
           from: { height: 0 },
-          to: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
       },
       animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require("tailwindcss-animate")],
 };
 ```
 
@@ -701,7 +697,7 @@ export function formatDateString(dateString: string) {
   return `${formattedDate} at ${time}`;
 }
 
-// 
+//
 export const multiFormatDateString = (timestamp: string = ""): string => {
   const timestampNum = Math.round(new Date(timestamp).getTime() / 1000);
   const date: Date = new Date(timestampNum * 1000);

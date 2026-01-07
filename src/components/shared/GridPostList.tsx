@@ -11,15 +11,25 @@ type GridPostListProps = {
   showStats?: boolean;
 };
 
-const GridPostCard = ({ post, showUser, showStats, userId }: { post: IPostDocument, showUser: boolean, showStats: boolean, userId: string }) => {
+const GridPostCard = ({
+  post,
+  showUser,
+  showStats,
+  userId,
+}: {
+  post: IPostDocument;
+  showUser: boolean;
+  showStats: boolean;
+  userId: string;
+}) => {
   if (!post || !post.$id) return null;
 
-  const creatorId = typeof post.creator === "string" 
-    ? post.creator 
-    : post.creator?.$id;
+  const creatorId =
+    typeof post.creator === "string" ? post.creator : post.creator?.$id;
 
   const { data: fetchedCreator } = useGetUserById(creatorId || "");
-  const creator = typeof post.creator === "string" ? fetchedCreator : post.creator;
+  const creator =
+    typeof post.creator === "string" ? fetchedCreator : post.creator;
 
   return (
     <li className="relative aspect-square">
@@ -44,7 +54,9 @@ const GridPostCard = ({ post, showUser, showStats, userId }: { post: IPostDocume
             />
             <p className="line-clamp-1 flex items-center gap-1">
               {(creator as any)?.name || "Unknown"}
-              {(creator as any)?.is_verified && <VerifiedBadge className="w-3 h-3" />}
+              {(creator as any)?.is_verified && (
+                <VerifiedBadge className="w-3 h-3" />
+              )}
             </p>
           </div>
         )}
@@ -65,17 +77,17 @@ const GridPostList = ({
 
   return (
     <ul className="grid-container">
-      {posts.map((post) => (
+      {posts.map((post) =>
         post && post.$id ? (
-          <GridPostCard 
-            key={post.$id} 
-            post={post} 
-            showUser={showUser} 
-            showStats={showStats} 
-            userId={user.id} 
+          <GridPostCard
+            key={post.$id}
+            post={post}
+            showUser={showUser}
+            showStats={showStats}
+            userId={user.id}
           />
         ) : null
-      ))}
+      )}
     </ul>
   );
 };

@@ -9,6 +9,7 @@
 ## 🔄 How Like Persistence Works
 
 ### 1. Like Data Storage
+
 ```
 When a user likes a post:
   ├─ A document is created in the "Likes" collection
@@ -18,6 +19,7 @@ When a user likes a post:
 ```
 
 ### 2. After Page Refresh
+
 ```
 When the page refreshes:
   ├─ React Query fetches posts from Appwrite database
@@ -27,6 +29,7 @@ When the page refreshes:
 ```
 
 ### 3. Liked Posts Tab
+
 ```
 When user views their "Liked Posts":
   ├─ Frontend queries the Likes collection for user's likes
@@ -41,6 +44,7 @@ When user views their "Liked Posts":
 ## 📊 Data Flow
 
 ### Creating a Like
+
 ```
 User Clicks Like
     ↓
@@ -69,6 +73,7 @@ Posts refetch with new like count
 ```
 
 ### Page Refresh
+
 ```
 User Refreshes Page
     ↓
@@ -89,6 +94,7 @@ Post displays EXACTLY as before refresh
 ```
 
 ### Viewing Liked Posts
+
 ```
 User Clicks "Liked Posts" Tab
     ↓
@@ -108,35 +114,41 @@ Displays all liked posts
 
 ## ✅ What's Guaranteed
 
-| Feature | Status | Reason |
-|---------|--------|--------|
-| Like persists after refresh | ✅ YES | Data stored in database |
-| Multiple likes prevented | ✅ YES | Backend checks duplicates |
-| Liked posts always show | ✅ YES | Permanent records exist |
-| Unlike removes like | ✅ YES | Document deleted from DB |
-| Like count accurate | ✅ YES | Two-way relationships sync |
-| No lost data on crash | ✅ YES | Appwrite handles persistence |
+| Feature                     | Status | Reason                       |
+| --------------------------- | ------ | ---------------------------- |
+| Like persists after refresh | ✅ YES | Data stored in database      |
+| Multiple likes prevented    | ✅ YES | Backend checks duplicates    |
+| Liked posts always show     | ✅ YES | Permanent records exist      |
+| Unlike removes like         | ✅ YES | Document deleted from DB     |
+| Like count accurate         | ✅ YES | Two-way relationships sync   |
+| No lost data on crash       | ✅ YES | Appwrite handles persistence |
 
 ---
 
 ## 🧪 How to Test
 
 ### Test 1: Like Persistence
+
 ```bash
 node scripts/test-persistence.js
 ```
+
 This creates a test like and verifies it exists after simulated refresh.
 
 ### Test 2: No Duplicates
+
 ```bash
 node scripts/remove-duplicate-likes.js
 ```
+
 This finds and removes any duplicate likes (shouldn't find any new ones).
 
 ### Test 3: Like Functionality
+
 ```bash
 node scripts/test-like.js
 ```
+
 This creates, reads, and deletes a like to verify all operations work.
 
 ---
@@ -156,36 +168,40 @@ This creates, reads, and deletes a like to verify all operations work.
    - Error logged to console
 
 ### Code Example:
+
 ```typescript
 const handleLikePost = (e: React.MouseEvent) => {
   e.stopPropagation();
-  
+
   // Prevent duplicate likes while request in progress
   if (isLikingInProgress) return;
-  
+
   if (likedPostRecord) {
     setIsLikingInProgress(true);
     setIsLiked(false);
     deleteLikedPost(likedPostRecord.$id, {
       onSuccess: () => setIsLikingInProgress(false),
       onError: () => {
-        setIsLiked(true);  // Revert if failed
+        setIsLiked(true); // Revert if failed
         setIsLikingInProgress(false);
-      }
+      },
     });
     return;
   }
-  
+
   // Create like
   setIsLikingInProgress(true);
   setIsLiked(true);
-  likePost({ userId, postId }, {
-    onSuccess: () => setIsLikingInProgress(false),
-    onError: () => {
-      setIsLiked(false);  // Revert if failed
-      setIsLikingInProgress(false);
+  likePost(
+    { userId, postId },
+    {
+      onSuccess: () => setIsLikingInProgress(false),
+      onError: () => {
+        setIsLiked(false); // Revert if failed
+        setIsLikingInProgress(false);
+      },
     }
-  });
+  );
 };
 ```
 
@@ -202,6 +218,7 @@ const handleLikePost = (e: React.MouseEvent) => {
    - Relationships auto-sync
 
 ### Code Example:
+
 ```typescript
 export async function likePost(userId: string, postId: string) {
   try {
@@ -209,10 +226,7 @@ export async function likePost(userId: string, postId: string) {
     const existingLikes = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.likesCollectionId,
-      [
-        Query.equal("user", userId),
-        Query.equal("post", postId)
-      ]
+      [Query.equal("user", userId), Query.equal("post", postId)]
     );
 
     // Return existing if found (no duplicate)

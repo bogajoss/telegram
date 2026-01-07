@@ -10,7 +10,12 @@ import {
 import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useFollowUser, useGetCurrentUser, useGetUserPosts } from "@/lib/react-query/queries";
+import {
+  useGetUserById,
+  useFollowUser,
+  useGetCurrentUser,
+  useGetUserPosts,
+} from "@/lib/react-query/queries";
 import { GridPostList, Loader, VerifiedBadge } from "@/components/shared";
 
 interface StabBlockProps {
@@ -31,7 +36,9 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
-  const { data: userPosts, isLoading: isPostsLoading } = useGetUserPosts(id || "");
+  const { data: userPosts, isLoading: isPostsLoading } = useGetUserPosts(
+    id || ""
+  );
   const { data: loggedInUser } = useGetCurrentUser();
   const { mutate: followUser } = useFollowUser();
 
@@ -42,10 +49,11 @@ const Profile = () => {
       </div>
     );
 
-  const isFollowing = loggedInUser?.following?.some((u: any) => {
-    const followingId = typeof u === "string" ? u : u?.$id;
-    return followingId === currentUser?.$id;
-  }) ?? false;
+  const isFollowing =
+    loggedInUser?.following?.some((u: any) => {
+      const followingId = typeof u === "string" ? u : u?.$id;
+      return followingId === currentUser?.$id;
+    }) ?? false;
 
   const handleFollowUser = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,17 +63,23 @@ const Profile = () => {
       return;
     }
 
-    let followingArray = (loggedInUser?.following ?? []).map((u: any) => 
+    let followingArray = (loggedInUser?.following ?? []).map((u: any) =>
       typeof u === "string" ? u : u?.$id
     ) as string[];
 
     if (isFollowing) {
-      followingArray = followingArray.filter((followingId: string) => followingId !== currentUser.$id);
+      followingArray = followingArray.filter(
+        (followingId: string) => followingId !== currentUser.$id
+      );
     } else {
       followingArray.push(currentUser.$id);
     }
 
-    followUser({ userId: currentUser.$id, followerId: loggedInUser.$id, followingArray });
+    followUser({
+      userId: currentUser.$id,
+      followerId: loggedInUser.$id,
+      followingArray,
+    });
   };
 
   return (
@@ -83,7 +97,9 @@ const Profile = () => {
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full flex items-center justify-center xl:justify-start gap-1">
                 {currentUser?.name || "Unknown User"}
-                {currentUser?.is_verified && <VerifiedBadge className="w-6 h-6 lg:w-8 lg:h-8" />}
+                {currentUser?.is_verified && (
+                  <VerifiedBadge className="w-6 h-6 lg:w-8 lg:h-8" />
+                )}
               </h1>
               <p className="small-regular md:body-medium text-light-3 text-center xl:text-left">
                 @{currentUser?.username || "unknown"}
@@ -91,9 +107,18 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={userPosts?.documents?.length ?? 0} label="Posts" />
-              <StatBlock value={currentUser?.followers?.length ?? 0} label="Followers" />
-              <StatBlock value={currentUser?.following?.length ?? 0} label="Following" />
+              <StatBlock
+                value={userPosts?.documents?.length ?? 0}
+                label="Posts"
+              />
+              <StatBlock
+                value={currentUser?.followers?.length ?? 0}
+                label="Followers"
+              />
+              <StatBlock
+                value={currentUser?.following?.length ?? 0}
+                label="Following"
+              />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm line-clamp-3">
@@ -120,11 +145,10 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === currentUser.$id && "hidden"}`}>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 className="shad-button_primary px-8"
-                onClick={handleFollowUser}
-              >
+                onClick={handleFollowUser}>
                 {isFollowing ? "Unfollow" : "Follow"}
               </Button>
             </div>
@@ -170,7 +194,10 @@ const Profile = () => {
             isPostsLoading ? (
               <Loader />
             ) : (
-              <GridPostList posts={userPosts?.documents as any} showUser={false} />
+              <GridPostList
+                posts={userPosts?.documents as any}
+                showUser={false}
+              />
             )
           }
         />

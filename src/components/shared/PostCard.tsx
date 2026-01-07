@@ -13,13 +13,15 @@ type PostCardProps = {
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
 
-  const creatorId = typeof post.creator === "string" 
-    ? post.creator 
-    : post.creator?.$id || (post.creator as any)?.id;
+  const creatorId =
+    typeof post.creator === "string"
+      ? post.creator
+      : post.creator?.$id || (post.creator as any)?.id;
 
   const { data: fetchedCreator } = useGetUserById(creatorId || "");
 
-  const creator = typeof post.creator === "string" ? fetchedCreator : post.creator;
+  const creator =
+    typeof post.creator === "string" ? fetchedCreator : post.creator;
 
   if (!creator) return null;
 

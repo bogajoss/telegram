@@ -29,14 +29,11 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
   const { data: currentUser } = useGetCurrentUser();
 
-  const likedPostRecord = post?.likes?.find(
-    (record: ILikeDocument) => {
-      const recordUserId = typeof record?.user === "string" 
-        ? record.user 
-        : record?.user?.$id;
-      return recordUserId === userId;
-    }
-  );
+  const likedPostRecord = post?.likes?.find((record: ILikeDocument) => {
+    const recordUserId =
+      typeof record?.user === "string" ? record.user : record?.user?.$id;
+    return recordUserId === userId;
+  });
 
   useEffect(() => {
     setIsLiked(!!likedPostRecord);
@@ -66,7 +63,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         onError: () => {
           setIsLiked(true);
           setIsLikingInProgress(false);
-        }
+        },
       });
       return;
     }
@@ -81,7 +78,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         onError: () => {
           setIsLiked(false);
           setIsLikingInProgress(false);
-        }
+        },
       }
     );
   };
@@ -102,7 +99,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         onError: () => {
           setIsSaved(true);
           setIsSavingInProgress(false);
-        }
+        },
       });
       return;
     }
@@ -116,7 +113,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         onError: () => {
           setIsSaved(false);
           setIsSavingInProgress(false);
-        }
+        },
       }
     );
   };
@@ -131,9 +128,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       <div className="flex gap-2 mr-5">
         <img
           src={`${
-            isLiked
-              ? "/assets/icons/liked.svg"
-              : "/assets/icons/like.svg"
+            isLiked ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"
           }`}
           alt="like"
           width={20}
@@ -141,7 +136,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           onClick={(e) => handleLikePost(e)}
           className={`cursor-pointer transition-opacity ${isLikingInProgress ? "opacity-50 pointer-events-none" : ""}`}
         />
-        <p className="small-medium lg:base-medium">{post?.likes?.length ?? 0}</p>
+        <p className="small-medium lg:base-medium">
+          {post?.likes?.length ?? 0}
+        </p>
       </div>
 
       <div className="flex gap-2">

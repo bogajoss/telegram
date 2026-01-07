@@ -31,8 +31,19 @@ import {
   createComment,
   getPostComments,
   deleteComment,
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewComment } from "@/types";
+import {
+  INewPost,
+  INewUser,
+  IUpdatePost,
+  IUpdateUser,
+  INewComment,
+} from "@/types";
 
 // ============================================================
 // AUTH QUERIES
@@ -347,6 +358,74 @@ export const useDeleteComment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_COMMENTS],
+      });
+    },
+  });
+};
+
+// ============================================================
+// NOTIFICATION QUERIES
+// ============================================================
+
+export const useGetNotifications = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_NOTIFICATIONS, userId],
+    queryFn: () => getUserNotifications(userId || "", 50),
+    enabled: !!userId,
+    refetchInterval: 10000, // Refetch every 10 seconds
+  });
+};
+
+export const useGetUnreadCount = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_UNREAD_COUNT, userId],
+    queryFn: () => getUnreadNotificationCount(userId || ""),
+    enabled: !!userId,
+    refetchInterval: 5000, // Refetch every 5 seconds
+  });
+};
+
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) =>
+      markNotificationAsRead(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_NOTIFICATIONS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_UNREAD_COUNT],
+      });
+    },
+  });
+};
+
+export const useMarkAllNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => markAllNotificationsAsRead(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_NOTIFICATIONS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_UNREAD_COUNT],
+      });
+    },
+  });
+};
+
+export const useDeleteNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) => deleteNotification(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_NOTIFICATIONS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_UNREAD_COUNT],
       });
     },
   });

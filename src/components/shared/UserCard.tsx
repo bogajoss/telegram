@@ -14,7 +14,7 @@ const UserCard = ({ user }: UserCardProps) => {
   const { mutate: followUser } = useFollowUser();
 
   const userId = user.$id || (user as any).id;
-  const isFollowing = currentUser?.following?.some((u: any) => 
+  const isFollowing = currentUser?.following?.some((u: any) =>
     typeof u === "string" ? u === userId : u.$id === userId
   );
 
@@ -22,12 +22,15 @@ const UserCard = ({ user }: UserCardProps) => {
     e.preventDefault();
     e.stopPropagation();
 
-    let followingArray = currentUser?.following?.map((u: any) => 
-      typeof u === "string" ? u : u.$id
-    ) || [];
+    let followingArray =
+      currentUser?.following?.map((u: any) =>
+        typeof u === "string" ? u : u.$id
+      ) || [];
 
     if (isFollowing) {
-      followingArray = followingArray.filter((followingId: string) => followingId !== userId);
+      followingArray = followingArray.filter(
+        (followingId: string) => followingId !== userId
+      );
     } else {
       followingArray.push(userId);
     }
@@ -53,12 +56,11 @@ const UserCard = ({ user }: UserCardProps) => {
         </p>
       </div>
 
-      <Button 
-        type="button" 
-        size="sm" 
+      <Button
+        type="button"
+        size="sm"
         className="shad-button_primary px-5"
-        onClick={handleFollowUser}
-      >
+        onClick={handleFollowUser}>
         {isFollowing ? "Unfollow" : "Follow"}
       </Button>
     </Link>
@@ -66,4 +68,3 @@ const UserCard = ({ user }: UserCardProps) => {
 };
 
 export default UserCard;
-

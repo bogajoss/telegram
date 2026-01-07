@@ -1,4 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 
 import { INavLink } from "@/types";
 import { sidebarLinks } from "@/constants";
@@ -55,6 +56,7 @@ const LeftSidebar = () => {
         <ul className="flex flex-col gap-6">
           {sidebarLinks.map((link: INavLink) => {
             const isActive = pathname === link.route;
+            const IconComponent = link.icon;
 
             return (
               <li
@@ -65,11 +67,9 @@ const LeftSidebar = () => {
                 <NavLink
                   to={link.route}
                   className="flex gap-4 items-center p-4">
-                  <img
-                    src={link.imgURL}
-                    alt={link.label}
-                    className={`group-hover:invert-white ${
-                      isActive && "invert-white"
+                  <IconComponent
+                    className={`h-6 w-6 group-hover:text-white ${
+                      isActive ? "text-white" : "text-light-3"
                     }`}
                   />
                   {link.label}
@@ -84,7 +84,7 @@ const LeftSidebar = () => {
         variant="ghost"
         className="shad-button_ghost"
         onClick={(e) => handleSignOut(e)}>
-        <img src="/assets/icons/logout.svg" alt="logout" />
+        <LogOut className="h-5 w-5" />
         <p className="small-medium lg:base-medium">Logout</p>
       </Button>
     </nav>
