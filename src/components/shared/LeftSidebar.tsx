@@ -5,7 +5,7 @@ import { INavLink } from "@/types";
 import { sidebarLinks } from "@/constants";
 import { Loader, VerifiedBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { useSignOutAccount } from "@/lib/react-query/queries";
+import { useSignOutAccount, useGetUnreadCount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
 
 const LeftSidebar = () => {
@@ -13,6 +13,7 @@ const LeftSidebar = () => {
   const { pathname } = useLocation();
   const { user, setUser, setIsAuthenticated, isLoading } = useUserContext();
 
+  const { data: unreadCount = 0 } = useGetUnreadCount(user?.id);
   const { mutate: signOut } = useSignOutAccount();
 
   const handleSignOut = async (
@@ -73,6 +74,11 @@ const LeftSidebar = () => {
                     }`}
                   />
                   {link.label}
+                  {link.label === "Notifications" && unreadCount > 0 && (
+                    <span className="ml-auto bg-primary-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ring-2 ring-dark-1">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             );
