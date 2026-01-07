@@ -18,7 +18,7 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
       fieldChange(acceptedFiles);
       setFileUrl(convertFileToUrl(acceptedFiles[0]));
     },
-    [file]
+    [file, fieldChange]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
