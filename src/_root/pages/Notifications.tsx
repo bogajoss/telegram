@@ -32,12 +32,12 @@ interface Notification {
   $createdAt: string;
 }
 
-const CustomCheckbox = ({ 
-  checked, 
-  onChange 
-}: { 
-  checked: boolean; 
-  onChange: () => void 
+const CustomCheckbox = ({
+  checked,
+  onChange
+}: {
+  checked: boolean;
+  onChange: () => void
 }) => (
   <Button
     variant="ghost"
@@ -134,10 +134,10 @@ const NotificationItem = ({
           ? "bg-dark-3 border-dark-4"
           : "bg-dark-2 border-dark-4 hover:bg-dark-3"
       )}>
-      
-      <CustomCheckbox 
-        checked={isSelected} 
-        onChange={() => onToggleSelect(notification.$id)} 
+
+      <CustomCheckbox
+        checked={isSelected}
+        onChange={() => onToggleSelect(notification.$id)}
       />
 
       <div
@@ -253,7 +253,7 @@ const Notifications = () => {
   return (
     <div className="common-container">
       <div className="user-container">
-        <div className="flex-between w-full">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4 md:gap-0">
           <div className="flex gap-2 items-center">
             <Bell className="h-8 w-8 text-white" />
             <h2 className="h3-bold md:h2-bold text-left w-full">Notifications</h2>
@@ -261,14 +261,14 @@ const Notifications = () => {
 
           <div className="flex-center gap-3 bg-dark-3 rounded-xl px-4 py-2">
             <Button
-              variant="ghost" 
+              variant="ghost"
               onClick={handleSelectAll}
               className="small-medium md:base-medium text-light-3 hover:text-primary-500 hover:bg-transparent transition-colors mr-2 h-auto p-0"
             >
               {selectedNotifications.size === displayedNotifications.length && displayedNotifications.length > 0 ? "Deselect All" : "Select All"}
             </Button>
             <div className="w-[1px] h-4 bg-dark-4" />
-            <Button 
+            <Button
               variant="ghost"
               onClick={() => setActiveTab("all")}
               className={`small-medium md:base-medium h-auto p-0 hover:bg-transparent ${activeTab === 'all' ? 'text-primary-500' : 'text-light-2 hover:text-primary-500'}`}
@@ -276,7 +276,7 @@ const Notifications = () => {
               All
             </Button>
             <div className="w-[1px] h-4 bg-dark-4" />
-            <Button 
+            <Button
               variant="ghost"
               onClick={() => setActiveTab("unread")}
               className={`small-medium md:base-medium h-auto p-0 hover:bg-transparent ${activeTab === 'unread' ? 'text-primary-500' : 'text-light-2 hover:text-primary-500'}`}

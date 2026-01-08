@@ -24,7 +24,7 @@ const Topbar = () => {
           <span className="h3-bold">Genjam</span>
         </Link>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 sm:gap-4 items-center">
           <ThemeToggle />
           <NotificationBell />
           <Button

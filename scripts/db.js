@@ -247,6 +247,7 @@ async function createCollections() {
       ],
       indexes: [
         { key: "idx_createdAt", type: "key", attributes: ["$createdAt"] },
+        { key: "idx_caption", type: "fulltext", attributes: ["caption"] },
       ],
     },
     {
@@ -495,6 +496,71 @@ async function createRelationships() {
   }
 }
 
+async function createRelationshipIndexes() {
+  logStep("Create Relationship Indexes");
+
+  const relationshipIndexes = [
+    {
+      collectionId: POST_COLLECTION_ID,
+      key: "idx_creator",
+      type: "key",
+      attributes: ["creator"],
+    },
+    {
+      collectionId: COMMENTS_COLLECTION_ID,
+      key: "idx_post",
+      type: "key",
+      attributes: ["post"],
+    },
+    {
+      collectionId: LIKES_COLLECTION_ID,
+      key: "idx_user",
+      type: "key",
+      attributes: ["user"],
+    },
+    {
+      collectionId: LIKES_COLLECTION_ID,
+      key: "idx_post",
+      type: "key",
+      attributes: ["post"],
+    },
+    {
+      collectionId: SAVES_COLLECTION_ID,
+      key: "idx_user",
+      type: "key",
+      attributes: ["user"],
+    },
+    {
+      collectionId: SAVES_COLLECTION_ID,
+      key: "idx_post",
+      type: "key",
+      attributes: ["post"],
+    },
+  ];
+
+  for (const idx of relationshipIndexes) {
+    try {
+      await api(
+        "POST",
+        `/databases/${DATABASE_ID}/collections/${idx.collectionId}/indexes`,
+        {
+          key: idx.key,
+          type: idx.type,
+          attributes: idx.attributes,
+        }
+      );
+      logSuccess(`Index "${idx.key}" created`);
+      await sleep(300);
+    } catch (e) {
+      if (e.status === 409) {
+        logSkip(`Index "${idx.key}" already exists`);
+      } else {
+        logError(`Index "${idx.key}" failed - ${e.message}`);
+      }
+    }
+  }
+}
+
 // ===================================================
 // 5. MAIN EXECUTION
 // ===================================================
@@ -521,6 +587,9 @@ async function main() {
     await sleep(500);
 
     await createRelationships();
+    await sleep(500);
+
+    await createRelationshipIndexes();
     await sleep(500);
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

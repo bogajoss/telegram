@@ -22,12 +22,12 @@ const GridPostCard = ({
   showStats: boolean;
   userId: string;
 }) => {
-  if (!post || !post.$id) return null;
-
   const creatorId =
-    typeof post.creator === "string" ? post.creator : post.creator?.$id;
+    typeof post?.creator === "string" ? post.creator : post?.creator?.$id;
 
   const { data: fetchedCreator } = useGetUserById(creatorId || "");
+
+  if (!post || !post.$id) return null;
   const creator =
     typeof post.creator === "string" ? fetchedCreator : post.creator;
 

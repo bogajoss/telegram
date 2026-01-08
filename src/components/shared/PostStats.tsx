@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Heart, Bookmark } from "lucide-react";
 
@@ -33,9 +33,17 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     return recordUserId === userId;
   });
 
-  useEffect(() => {
-    setIsLiked(!!likedPostRecord);
-  }, [likedPostRecord, userId]);
+  // Sync local state with props (Optimistic UI + Server Truth)
+  // We use this pattern to update state during render if props change
+  // Reference: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+
+  const isLikedFromProps = !!likedPostRecord;
+  const [prevIsLikedFromProps, setPrevIsLikedFromProps] = useState(isLikedFromProps);
+
+  if (isLikedFromProps !== prevIsLikedFromProps) {
+    setPrevIsLikedFromProps(isLikedFromProps);
+    setIsLiked(isLikedFromProps);
+  }
 
   const savedPostRecord = post?.save?.find((record: ISaveDocument) => {
     const recordUserId =
@@ -43,9 +51,13 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     return recordUserId === userId;
   });
 
-  useEffect(() => {
-    setIsSaved(!!savedPostRecord);
-  }, [userId, savedPostRecord]);
+  const isSavedFromProps = !!savedPostRecord;
+  const [prevIsSavedFromProps, setPrevIsSavedFromProps] = useState(isSavedFromProps);
+
+  if (isSavedFromProps !== prevIsSavedFromProps) {
+    setPrevIsSavedFromProps(isSavedFromProps);
+    setIsSaved(isSavedFromProps);
+  }
 
   const handleLikePost = (
     e: React.MouseEvent<SVGElement, MouseEvent>
@@ -128,9 +140,8 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         <Heart
           size={20}
           onClick={(e) => handleLikePost(e)}
-          className={`cursor-pointer transition-opacity ${
-            isLikingInProgress ? "opacity-50 pointer-events-none" : ""
-          } ${isLiked ? "fill-red text-red" : "text-primary-500"}`}
+          className={`cursor-pointer transition-opacity ${isLikingInProgress ? "opacity-50 pointer-events-none" : ""
+            } ${isLiked ? "fill-red text-red" : "text-primary-500"}`}
         />
         <p className="small-medium lg:base-medium">
           {post?.likes?.length ?? 0}
@@ -141,9 +152,8 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
         <Bookmark
           size={20}
           onClick={(e) => handleSavePost(e)}
-          className={`cursor-pointer transition-opacity ${
-            isSavingInProgress ? "opacity-50 pointer-events-none" : ""
-          } ${isSaved ? "fill-primary-500 text-primary-500" : "text-primary-500"}`}
+          className={`cursor-pointer transition-opacity ${isSavingInProgress ? "opacity-50 pointer-events-none" : ""
+            } ${isSaved ? "fill-primary-500 text-primary-500" : "text-primary-500"}`}
         />
       </div>
     </div>

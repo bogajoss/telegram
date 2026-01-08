@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { UploadCloud } from "lucide-react";
 
+import { processImage } from "@/lib/imageUtils";
+
 import { Button } from "@/components/ui";
 import { convertFileToUrl } from "@/lib/utils";
 
@@ -13,10 +15,20 @@ type FileUploaderProps = {
 const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
 
+
+
+  // ... existing imports
+
   const onDrop = useCallback(
-    (acceptedFiles: FileWithPath[]) => {
-      fieldChange(acceptedFiles);
-      setFileUrl(convertFileToUrl(acceptedFiles[0]));
+    async (acceptedFiles: FileWithPath[]) => {
+      // 1. Convert/Process files
+      const processedFiles = await Promise.all(
+        acceptedFiles.map(async (file) => await processImage(file))
+      );
+
+      // 2. Update state with processed files
+      fieldChange(processedFiles);
+      setFileUrl(convertFileToUrl(processedFiles[0]));
     },
     [fieldChange]
   );

@@ -2,10 +2,12 @@ import { Loader, PostCard, UserCard } from "@/components/shared";
 import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import { IPostDocument, IUserDocument } from "@/types";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useUserContext } from "@/context/AuthContext";
+import { rankPosts } from "@/lib/feedAlgorithm";
+import { useMemo } from "react";
 
 const Home = () => {
-  // const { toast } = useToast();
-
+  const { user } = useUserContext();
   const {
     data: posts,
     isLoading: isPostLoading,
@@ -16,6 +18,11 @@ const Home = () => {
     isLoading: isUserLoading,
     isError: isErrorCreators,
   } = useGetUsers(10);
+
+  const rankedPosts = useMemo(() => {
+    if (!posts?.documents) return [];
+    return rankPosts(posts.documents, user);
+  }, [posts, user]);
 
   if (isErrorPosts || isErrorCreators) {
     return (
@@ -34,7 +41,7 @@ const Home = () => {
     );
   }
 
-  if (!posts?.documents || !creators?.documents) {
+  if (isPostLoading && !posts) {
     return (
       <div className="flex flex-1">
         <div className="home-container">
@@ -49,16 +56,14 @@ const Home = () => {
       <div className="home-container">
         <div className="home-posts">
           <h2 className="h3-bold md:h2-bold text-left w-full">Home Feed</h2>
-          {isPostLoading ? (
-            <Loader />
-          ) : posts.documents.length > 0 ? (
+          {rankedPosts.length > 0 ? (
             <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts.documents.map((post: IPostDocument, index: number) => (
+              {rankedPosts.map((post: IPostDocument, index: number) => (
                 <li key={post.$id} className="flex flex-col w-full gap-9">
                   <div className="flex justify-center w-full">
                     <PostCard post={post} />
                   </div>
-                  
+
                   {/* Insert "People You May Know" after the second post (index 1) */}
                   {index === 1 && creators?.documents && creators.documents.length > 0 && (
                     <div className="w-full max-w-screen-sm mx-auto overflow-hidden">
@@ -90,9 +95,9 @@ const Home = () => {
         <h3 className="h3-bold text-light-1">Top Creators</h3>
         {isUserLoading ? (
           <Loader />
-        ) : creators.documents.length > 0 ? (
+        ) : (creators?.documents.length || 0) > 0 ? (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators.documents.map((creator) => (
+            {creators?.documents.map((creator) => (
               <li key={creator?.$id}>
                 <UserCard user={creator} />
               </li>

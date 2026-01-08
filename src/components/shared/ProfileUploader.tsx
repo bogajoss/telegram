@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 
 import { convertFileToUrl } from "@/lib/utils";
+import { processImage } from "@/lib/imageUtils";
 
 type ProfileUploaderProps = {
   fieldChange: (files: File[]) => void;
@@ -12,9 +13,12 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
 
   const onDrop = useCallback(
-    (acceptedFiles: FileWithPath[]) => {
-      fieldChange(acceptedFiles);
-      setFileUrl(convertFileToUrl(acceptedFiles[0]));
+    async (acceptedFiles: FileWithPath[]) => {
+      const processedFiles = await Promise.all(
+        acceptedFiles.map(async (file) => await processImage(file))
+      );
+      fieldChange(processedFiles);
+      setFileUrl(convertFileToUrl(processedFiles[0]));
     },
     [fieldChange]
   );

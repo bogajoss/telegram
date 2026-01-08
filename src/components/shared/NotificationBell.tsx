@@ -230,8 +230,8 @@ export const NotificationBell = () => {
           {/* Notifications List */}
           <div className="overflow-y-auto max-h-[400px] custom-scrollbar">
             {notifications &&
-            notifications.documents &&
-            notifications.documents.length > 0 ? (
+              notifications.documents &&
+              notifications.documents.length > 0 ? (
               (notifications.documents as unknown as Notification[]).map(
                 (notification) => (
                   <NotificationItem
@@ -249,7 +249,7 @@ export const NotificationBell = () => {
                   <Bell className="h-8 w-8 text-light-4" />
                 </div>
                 <p className="text-light-2 font-semibold text-sm">No notifications</p>
-                <p className="text-light-4 text-xs mt-1">We'll let you know when something happens!</p>
+                <p className="text-light-4 text-xs mt-1">We&apos;ll let you know when something happens!</p>
               </div>
             )}
           </div>

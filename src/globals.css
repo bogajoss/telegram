@@ -25,12 +25,12 @@
     --secondary-500: #ffb620;
     --off-white: #d0dfff;
     --red: #ff5a5a;
-    
+
     --dark-1: #000000;
     --dark-2: #09090a;
     --dark-3: #101012;
     --dark-4: #1f1f22;
-    
+
     --light-1: #ffffff;
     --light-2: #efefef;
     --light-3: #7878a3;
@@ -39,19 +39,28 @@
 
   /* LIGHT THEME OVERRIDES */
   .light {
-    --primary-500: #625aff; /* Slightly darker for better contrast on white */
-    
+    --primary-500: #625aff;
+    /* Slightly darker for better contrast on white */
+
     /* Invert Backgrounds: Dark becomes Light */
-    --dark-1: #ffffff; /* Main Background */
-    --dark-2: #f8f9fa; /* Sidebar/Card Background */
-    --dark-3: #f1f2f4; /* Input Background */
-    --dark-4: #e2e4e8; /* Borders/Separators */
-    
+    --dark-1: #ffffff;
+    /* Main Background */
+    --dark-2: #f8f9fa;
+    /* Sidebar/Card Background */
+    --dark-3: #f1f2f4;
+    /* Input Background */
+    --dark-4: #e2e4e8;
+    /* Borders/Separators */
+
     /* Invert Text: Light becomes Dark */
-    --light-1: #09090b; /* Main Text */
-    --light-2: #1f2937; /* Secondary Text */
-    --light-3: #64748b; /* Muted Text */
-    --light-4: #94a3b8; /* Disabled/Subtle Text */
+    --light-1: #09090b;
+    /* Main Text */
+    --light-2: #1f2937;
+    /* Secondary Text */
+    --light-3: #64748b;
+    /* Muted Text */
+    --light-4: #94a3b8;
+    /* Disabled/Subtle Text */
   }
 }
 
@@ -61,12 +70,12 @@
   --color-secondary-500: var(--secondary-500);
   --color-off-white: var(--off-white);
   --color-red: var(--red);
-  
+
   --color-dark-1: var(--dark-1);
   --color-dark-2: var(--dark-2);
   --color-dark-3: var(--dark-3);
   --color-dark-4: var(--dark-4);
-  
+
   --color-light-1: var(--light-1);
   --color-light-2: var(--light-2);
   --color-light-3: var(--light-3);
@@ -86,14 +95,17 @@
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
@@ -186,9 +198,14 @@
   body {
     @apply bg-dark-1 text-light-1 min-h-screen font-inter overflow-x-hidden transition-colors duration-300;
   }
+
+  img {
+    @apply block max-w-full h-auto;
+  }
 }
 
 @layer utilities {
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   *::-webkit-scrollbar {
     display: none;
@@ -196,8 +213,10 @@
 
   /* Hide scrollbar for IE, Edge and Firefox */
   * {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   .common-container {
@@ -236,7 +255,7 @@
   }
 
   .home-creators {
-    @apply hidden xl:flex flex-col w-72 2xl:w-465 px-6 py-10 gap-10  overflow-scroll;
+    @apply hidden xl:flex flex-col w-72 2xl:w-465 px-6 py-10 gap-10 overflow-scroll;
   }
 
   /* Post Details */
@@ -270,7 +289,7 @@
   }
 
   .profile-tab {
-    @apply flex-center gap-3 py-4 w-48 bg-dark-2  transition flex-1 xl:flex-initial;
+    @apply flex-center gap-3 py-4 w-48 bg-dark-2 transition flex-1 xl:flex-initial;
   }
 
   /* Saved */
@@ -320,7 +339,7 @@
 
   /* Post Card */
   .post-card {
-    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 w-full max-w-screen-sm;
+    @apply bg-dark-2 rounded-3xl border border-dark-4 p-4 xs:p-5 lg:p-7 w-full max-w-screen-sm;
   }
 
   .post-card_img {
@@ -339,6 +358,7 @@
 }
 
 @layer components {
+
   /* SHADCN COMPONENTS */
   /* Form */
   .shad-form_label {
