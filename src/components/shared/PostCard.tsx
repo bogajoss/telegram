@@ -13,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PostCardProps = {
   post: IPostDocument;
@@ -38,14 +39,15 @@ const PostCard = ({ post }: PostCardProps) => {
       <div className="flex-between">
         <div className="flex items-center gap-3">
           <Link to={`/profile/${creatorId || ""}`}>
-            <img
-              src={
-                (creator as any)?.imageUrl ||
-                "/assets/icons/profile-placeholder.svg"
-              }
-              alt="creator"
-              className="w-12 lg:h-12 rounded-full"
-            />
+            <Avatar className="w-12 h-12">
+              <AvatarImage
+                src={(creator as any)?.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                alt="creator"
+              />
+              <AvatarFallback className="bg-dark-4 text-light-1">
+                {(creator as any)?.name?.substring(0, 2).toUpperCase() || "CN"}
+              </AvatarFallback>
+            </Avatar>
           </Link>
 
           <div className="flex flex-col">

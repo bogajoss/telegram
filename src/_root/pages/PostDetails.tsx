@@ -11,6 +11,10 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  Separator,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
 } from "@/components/ui";
 
 import {
@@ -46,11 +50,15 @@ const CommentItem = ({
   return (
     <div className="flex gap-3 items-start">
       <Link to={`/profile/${creator.$id}`}>
-        <img
-          src={creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
-          alt="creator"
-          className="w-8 h-8 rounded-full"
-        />
+        <Avatar className="w-8 h-8">
+          <AvatarImage
+            src={creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
+            alt="creator"
+          />
+          <AvatarFallback className="bg-dark-4 text-light-1 text-xs">
+            {creator.name?.substring(0, 2).toUpperCase() || "CN"}
+          </AvatarFallback>
+        </Avatar>
       </Link>
       <div className="flex flex-col flex-1">
         <div className="flex justify-between items-center">
@@ -169,14 +177,19 @@ const PostDetails = () => {
               <Link
                 to={`/profile/${creatorId || ""}`}
                 className="flex items-center gap-3">
-                <img
-                  src={
-                    (creator as any)?.imageUrl ||
-                    "/assets/icons/profile-placeholder.svg"
-                  }
-                  alt="creator"
-                  className="w-8 h-8 lg:w-12 lg:h-12 rounded-full"
-                />
+                <Avatar className="w-8 h-8 lg:w-12 lg:h-12">
+                  <AvatarImage
+                    src={
+                      (creator as any)?.imageUrl ||
+                      "/assets/icons/profile-placeholder.svg"
+                    }
+                    alt="creator"
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-dark-4 text-light-1">
+                    {(creator as any)?.name?.substring(0, 2).toUpperCase() || "CN"}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex gap-1 flex-col">
                   <p className="base-medium lg:body-bold text-light-1 flex items-center gap-1">
                     {(creator as any)?.name}
@@ -191,9 +204,8 @@ const PostDetails = () => {
               </Link>
 
               <div
-                className={`flex-center gap-4 ${
-                  user.id !== creatorId && "hidden"
-                }`}>
+                className={`flex-center gap-4 ${user.id !== creatorId && "hidden"
+                  }`}>
                 <Link
                   to={`/update-post/${post?.$id}`}
                   className={`${user.id !== creatorId && "hidden"}`}>
@@ -203,15 +215,14 @@ const PostDetails = () => {
                 <Button
                   onClick={handleDeletePost}
                   variant="ghost"
-                  className={`ost_details-delete_btn ${
-                    user.id !== creatorId && "hidden"
-                  }`}>
+                  className={`ost_details-delete_btn ${user.id !== creatorId && "hidden"
+                    }`}>
                   <Trash2 width={24} height={24} />
                 </Button>
               </div>
             </div>
 
-            <hr className="border w-full border-dark-4/80" />
+            <Separator className="w-full bg-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
               <p>{post?.caption}</p>
@@ -232,7 +243,7 @@ const PostDetails = () => {
 
             {/* COMMENTS SECTION */}
             <div className="flex flex-col gap-4 w-full mt-4">
-              <hr className="border w-full border-dark-4/80" />
+              <Separator className="w-full bg-dark-4/80" />
               <h4 className="body-bold text-light-1">Comments</h4>
 
               <form onSubmit={handleAddComment} className="flex gap-2">
@@ -279,7 +290,7 @@ const PostDetails = () => {
       )}
 
       <div className="w-full max-w-5xl">
-        <hr className="border w-full border-dark-4/80" />
+        <Separator className="w-full bg-dark-4/80" />
 
         <h3 className="body-bold md:h3-bold w-full my-10">
           More Related Posts

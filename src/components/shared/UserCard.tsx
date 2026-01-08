@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 
 import { Button, Spinner } from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { IUserDocument } from "@/types";
 import { useFollowUser, useGetCurrentUser } from "@/lib/react-query/queries";
 import { VerifiedBadge } from "./index";
@@ -41,11 +42,15 @@ const UserCard = ({ user }: UserCardProps) => {
 
   return (
     <Link to={`/profile/${userId || ""}`} className="user-card">
-      <img
-        src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-        alt="creator"
-        className="rounded-full w-14 h-14"
-      />
+      <Avatar className="w-14 h-14">
+        <AvatarImage
+          src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+          alt="creator"
+        />
+        <AvatarFallback className="bg-dark-4 text-light-1">
+          {user.name?.substring(0, 2).toUpperCase() || "CN"}
+        </AvatarFallback>
+      </Avatar>
 
       <div className="flex-center flex-col gap-1">
         <p className="base-medium text-light-1 text-center line-clamp-1 flex items-center justify-center">

@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import {
@@ -12,6 +11,12 @@ import {
 import { Bell, Check, Trash2, Heart, MessageCircle, Users } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Notification {
   $id: string;
@@ -98,11 +103,16 @@ const NotificationItem = ({
       )}
       onClick={handleClick}>
       <div className="relative flex-shrink-0">
-        <img
-          src={actor?.imageUrl || "/assets/icons/profile-placeholder.svg"}
-          alt="actor"
-          className="h-10 w-10 rounded-full object-cover border border-dark-4"
-        />
+        <Avatar className="h-10 w-10 border border-dark-4">
+          <AvatarImage
+            src={actor?.imageUrl || "/assets/icons/profile-placeholder.svg"}
+            alt="actor"
+            className="object-cover"
+          />
+          <AvatarFallback className="bg-dark-4 text-light-1 text-xs">
+            {actor?.name?.substring(0, 2).toUpperCase() || "CN"}
+          </AvatarFallback>
+        </Avatar>
         {getNotificationIcon(notification.type)}
       </div>
 
@@ -151,8 +161,6 @@ const NotificationItem = ({
 export const NotificationBell = () => {
   const { user } = useUserContext();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  const bellRef = useRef<HTMLDivElement>(null);
 
   const { data: notifications } = useGetNotifications(user.id);
   const { data: unreadCount } = useGetUnreadCount(user.id);
@@ -160,112 +168,104 @@ export const NotificationBell = () => {
   const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
   const { mutate: deleteNotif } = useDeleteNotification();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleMarkAllAsRead = () => {
     markAllAsRead(user.id);
   };
 
   const handleViewAll = () => {
-    setIsOpen(false);
+    // Dropdown closes automatically usually, but we force nav
     navigate("/notifications");
   };
 
   return (
-    <div ref={bellRef} className="relative">
-      {/* Bell Icon */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative hover:bg-dark-3 transition-colors"
-        aria-label="Notifications">
-        <Bell className="h-6 w-6 text-light-1" />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative hover:bg-dark-3 transition-colors"
+          aria-label="Notifications">
+          <Bell className="h-6 w-6 text-light-1" />
 
-        {/* Unread Badge */}
-        {unreadCount && unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold border-2 border-dark-1">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        )}
-      </Button>
+          {/* Unread Badge */}
+          {unreadCount && unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold border-2 border-dark-1">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-h-[550px] bg-dark-2 border border-dark-4 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-dark-4 bg-dark-2/50 backdrop-blur-md sticky top-0 z-10">
-            <div>
-              <h2 className="text-light-1 font-bold text-base">
-                Notifications
-              </h2>
-              {unreadCount && unreadCount > 0 ? (
-                <p className="text-primary-500 text-[10px] font-medium">
-                  You have {unreadCount} unread messages
-                </p>
-              ) : null}
-            </div>
-            {unreadCount && unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                className="text-light-3 text-xs hover:text-white transition-colors flex items-center gap-1 bg-dark-3 px-2 py-1 h-auto">
-                <Check className="h-3 w-3" />
-                Mark all read
-              </Button>
-            )}
+      <DropdownMenuContent
+        align="end"
+        className="w-80 sm:w-96 p-0 bg-dark-2 border-dark-4 text-light-1 shadow-2xl"
+        forceMount // Optional: keep mounted for animations if configured
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-dark-4 bg-dark-2/95 backdrop-blur-md sticky top-0 z-10">
+          <div>
+            <h2 className="text-light-1 font-bold text-base">
+              Notifications
+            </h2>
+            {unreadCount && unreadCount > 0 ? (
+              <p className="text-primary-500 text-[10px] font-medium">
+                You have {unreadCount} unread messages
+              </p>
+            ) : null}
           </div>
-
-          {/* Notifications List */}
-          <div className="overflow-y-auto max-h-[400px] custom-scrollbar">
-            {notifications &&
-              notifications.documents &&
-              notifications.documents.length > 0 ? (
-              (notifications.documents as unknown as Notification[]).map(
-                (notification) => (
-                  <NotificationItem
-                    key={notification.$id}
-                    notification={notification}
-                    onClose={() => setIsOpen(false)}
-                    onMarkAsRead={(id) => markAsRead(id)}
-                    onDelete={(id) => deleteNotif(id)}
-                  />
-                )
-              )
-            ) : (
-              <div className="flex flex-col items-center justify-center p-10 text-center">
-                <div className="p-4 bg-dark-3 rounded-full mb-3">
-                  <Bell className="h-8 w-8 text-light-4" />
-                </div>
-                <p className="text-light-2 font-semibold text-sm">No notifications</p>
-                <p className="text-light-4 text-xs mt-1">We&apos;ll let you know when something happens!</p>
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="p-3 border-t border-dark-4 bg-dark-3/30">
+          {unreadCount && unreadCount > 0 && (
             <Button
-              variant="secondary"
-              onClick={handleViewAll}
-              className="w-full bg-dark-4 hover:bg-dark-3 text-light-1 text-sm font-semibold transition-colors border-none">
-              View all notifications
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                handleMarkAllAsRead();
+              }}
+              className="text-light-3 text-xs hover:text-white transition-colors flex items-center gap-1 bg-dark-3 px-2 py-1 h-auto">
+              <Check className="h-3 w-3" />
+              Mark all read
             </Button>
-          </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Notifications List */}
+        <div className="overflow-y-auto max-h-[400px] custom-scrollbar">
+          {notifications &&
+            notifications.documents &&
+            notifications.documents.length > 0 ? (
+            (notifications.documents as unknown as Notification[]).map(
+              (notification) => (
+                <NotificationItem
+                  key={notification.$id}
+                  notification={notification}
+                  onClose={() => { }} // Dropdown handles outside click usually
+                  onMarkAsRead={(id) => markAsRead(id)}
+                  onDelete={(id) => deleteNotif(id)}
+                />
+              )
+            )
+          ) : (
+            <div className="flex flex-col items-center justify-center p-10 text-center">
+              <div className="p-4 bg-dark-3 rounded-full mb-3">
+                <Bell className="h-8 w-8 text-light-4" />
+              </div>
+              <p className="text-light-2 font-semibold text-sm">No notifications</p>
+              <p className="text-light-4 text-xs mt-1">We&apos;ll let you know when something happens!</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-3 border-t border-dark-4 bg-dark-3/30">
+          <Button
+            variant="secondary"
+            onClick={handleViewAll}
+            className="w-full bg-dark-4 hover:bg-dark-3 text-light-1 text-sm font-semibold transition-colors border-none">
+            View all notifications
+          </Button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

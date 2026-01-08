@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Plus, Edit, Grid, Heart, Bookmark } from "lucide-react";
 
 import { Button, Spinner } from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LikedPosts, SavedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import {
@@ -27,7 +28,7 @@ interface StabBlockProps {
 }
 
 const StatBlock = ({ value, label, onClick }: StabBlockProps) => (
-  <div 
+  <div
     className={`flex-center gap-2 ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
     onClick={onClick}
   >
@@ -93,14 +94,18 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-inner_container">
+
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
-          <img
-            src={
-              currentUser?.imageUrl || "/assets/icons/profile-placeholder.svg"
-            }
-            alt="profile"
-            className="w-28 h-28 lg:h-36 lg:w-36 rounded-full"
-          />
+          <Avatar className="w-28 h-28 lg:h-36 lg:w-36">
+            <AvatarImage
+              src={currentUser?.imageUrl || "/assets/icons/profile-placeholder.svg"}
+              alt="profile"
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-dark-4 text-light-1 text-2xl">
+              {currentUser?.name?.substring(0, 2).toUpperCase() || "CN"}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full flex items-center justify-center xl:justify-start gap-1">
@@ -156,9 +161,8 @@ const Profile = () => {
             <div className={`${user.id !== currentUser.$id && "hidden"}`}>
               <Link
                 to={`/update-profile/${currentUser.$id}`}
-                className={`h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg ${
-                  user.id !== currentUser.$id && "hidden"
-                }`}>
+                className={`h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg ${user.id !== currentUser.$id && "hidden"
+                  }`}>
                 <Edit width={20} height={20} />
                 <p className="flex whitespace-nowrap small-medium">
                   Edit Profile
@@ -186,38 +190,37 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
 
-      {currentUser.$id === user.id && (
-        <div className="flex max-w-5xl w-full">
-          <Link
-            to={`/profile/${id}`}
-            className={`profile-tab rounded-l-lg ${
-              pathname === `/profile/${id}` && "!bg-dark-3"
-            }`}>
-            <Grid width={20} height={20} />
-            Posts
-          </Link>
-          <Link
-            to={`/profile/${id}/liked-posts`}
-            className={`profile-tab rounded-r-lg ${
-              pathname === `/profile/${id}/liked-posts` && "!bg-dark-3"
-            }`}>
-            <Heart width={20} height={20} />
-            Liked Posts
-          </Link>
-          <Link
-            to={`/profile/${id}/saved-posts`}
-            className={`profile-tab rounded-r-lg ${
-              pathname === `/profile/${id}/saved-posts` && "!bg-dark-3"
-            }`}>
-            <Bookmark width={20} height={20} />
-            Saved Posts
-          </Link>
-        </div>
-      )}
+      {
+        currentUser.$id === user.id && (
+          <div className="flex max-w-5xl w-full">
+            <Link
+              to={`/profile/${id}`}
+              className={`profile-tab rounded-l-lg ${pathname === `/profile/${id}` && "!bg-dark-3"
+                }`}>
+              <Grid width={20} height={20} />
+              Posts
+            </Link>
+            <Link
+              to={`/profile/${id}/liked-posts`}
+              className={`profile-tab rounded-r-lg ${pathname === `/profile/${id}/liked-posts` && "!bg-dark-3"
+                }`}>
+              <Heart width={20} height={20} />
+              Liked Posts
+            </Link>
+            <Link
+              to={`/profile/${id}/saved-posts`}
+              className={`profile-tab rounded-r-lg ${pathname === `/profile/${id}/saved-posts` && "!bg-dark-3"
+                }`}>
+              <Bookmark width={20} height={20} />
+              Saved Posts
+            </Link>
+          </div>
+        )
+      }
 
-      <Routes>
+      < Routes >
         <Route
           index
           element={
@@ -231,15 +234,19 @@ const Profile = () => {
             )
           }
         />
-        {currentUser.$id === user.id && (
-          <Route path="/liked-posts" element={<LikedPosts />} />
-        )}
-        {currentUser.$id === user.id && (
-          <Route path="/saved-posts" element={<SavedPosts />} />
-        )}
-      </Routes>
+        {
+          currentUser.$id === user.id && (
+            <Route path="/liked-posts" element={<LikedPosts />} />
+          )
+        }
+        {
+          currentUser.$id === user.id && (
+            <Route path="/saved-posts" element={<SavedPosts />} />
+          )
+        }
+      </Routes >
       <Outlet />
-    </div>
+    </div >
   );
 };
 

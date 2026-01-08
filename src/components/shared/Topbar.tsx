@@ -7,6 +7,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -34,11 +35,16 @@ const Topbar = () => {
             <LogOut className="h-5 w-5" />
           </Button>
           <Link to={`/profile/${user.id}`} className="flex-center gap-3">
-            <img
-              src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-              alt="profile"
-              className="h-8 w-8 rounded-full"
-            />
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                alt="profile"
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-dark-4 text-light-1 text-xs">
+                {user.name?.substring(0, 2).toUpperCase() || "CN"}
+              </AvatarFallback>
+            </Avatar>
           </Link>
         </div>
       </div>
